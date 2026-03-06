@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Confeitaria Duas Vontades
 
-## Getting Started
+Site completo em Next.js + React para uma doceria brasileira com foco em simplicidade, acessibilidade e pedido pelo WhatsApp.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 com App Router
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Motion para microinteracoes e overlays
+
+## Principais recursos
+
+- Home com apresentacao da loja, destaques e orientacoes de pedido
+- Pagina `/cardapio` com filtros por categoria e subcategoria
+- Carrinho persistido em `localStorage`
+- Checkout em modal com validacao acessivel
+- Envio do pedido para `wa.me` com mensagem pre-preenchida
+- Controle de fonte `A-`, `A` e `A+`
+- Layout responsivo com contraste forte e alvos de toque grandes
+
+## Estrutura principal
+
+- `app/layout.tsx`: layout raiz, header, footer e overlays globais
+- `app/page.tsx`: pagina inicial
+- `app/cardapio/page.tsx`: catalogo completo
+- `app/politica-de-privacidade/page.tsx`: uso basico dos dados do pedido
+- `src/data/produtos.ts`: seed data de doces e salgados brasileiros
+- `src/data/loja.ts`: dados da loja e pontos de customizacao
+- `src/contexts/CartContext.tsx`: estado global do carrinho com persistencia
+- `src/components/*`: header, cards, drawer, modal e filtros
+- `public/images/produtos/*`: fotos locais de estoque prontas para substituir
+- `docs/image-sources.md`: referencia das fotos usadas nesta versao
+
+## Como rodar
+
+1. Instale as dependencias:
+
+```bash
+npm install
+```
+
+2. Crie o arquivo `.env.local` com o numero do WhatsApp:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Edite `.env.local` e ajuste o numero no formato internacional, sem espacos:
+
+```bash
+NEXT_PUBLIC_WHATSAPP_NUMBER=5511999999999
+```
+
+4. Inicie o ambiente de desenvolvimento:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Abra `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts disponiveis
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev
+npm run lint
+npm run typecheck
+npm run build
+npm run start
+```
 
-## Learn More
+## Onde customizar
 
-To learn more about Next.js, take a look at the following resources:
+- Produtos, precos e disponibilidade: `src/data/produtos.ts`
+- Endereco e horario: `src/data/loja.ts`
+- Numero do WhatsApp: `.env.local` e ambiente de deploy
+- Textos e secoes da home: `app/page.tsx`
+- Fotos dos produtos: `public/images/produtos`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Os arquivos de dados ja tem comentarios `TODO` indicando os pontos mais provaveis de ajuste.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Regras do pedido
 
-## Deploy on Vercel
+- Credito, debito e dinheiro: pagamento na retirada
+- Pix: unico pagamento antecipado
+- O pedido final e confirmado no WhatsApp
+- O MVP nao usa backend, banco de dados ou autenticacao
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy na Vercel
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Suba o projeto para um repositorio Git.
+2. Importe o repositorio na Vercel.
+3. Configure a variavel `NEXT_PUBLIC_WHATSAPP_NUMBER` no painel do projeto.
+4. Execute o deploy.
+
+Observacao: variaveis com prefixo `NEXT_PUBLIC_` entram no bundle do cliente, entao qualquer mudanca no numero exige novo build/deploy.
+
+## Observacoes de acessibilidade
+
+- Contraste forte entre texto e fundo
+- Labels sempre visiveis no checkout
+- Foco visivel em teclado
+- Controles com altura minima de 44px
+- Movimento reduzido respeitado via Motion e `prefers-reduced-motion`
+- Layout preparado para funcionar bem com zoom do navegador e ajuste de fonte

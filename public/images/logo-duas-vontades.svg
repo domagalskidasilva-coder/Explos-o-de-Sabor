@@ -1,0 +1,52 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#E9E3DE"/>
+  <circle cx="256" cy="256" r="206" stroke="#E9A0A8" stroke-width="6"/>
+  <circle cx="256" cy="256" r="194" stroke="#E9A0A8" stroke-width="4"/>
+  <circle cx="256" cy="256" r="172" stroke="#7B2A0E" stroke-width="5"/>
+  <circle cx="256" cy="256" r="160" stroke="#7B2A0E" stroke-width="3"/>
+
+  <g fill="#7B2A0E" opacity="0.98">
+    <circle cx="138" cy="190" r="3"/>
+    <circle cx="150" cy="174" r="2"/>
+    <circle cx="167" cy="167" r="4"/>
+    <circle cx="182" cy="150" r="2"/>
+    <circle cx="201" cy="142" r="3"/>
+    <circle cx="327" cy="139" r="3"/>
+    <circle cx="348" cy="149" r="2"/>
+    <circle cx="364" cy="166" r="4"/>
+    <circle cx="376" cy="183" r="2"/>
+    <circle cx="381" cy="197" r="3"/>
+    <circle cx="118" cy="256" r="4"/>
+    <circle cx="132" cy="274" r="2"/>
+    <circle cx="138" cy="295" r="5"/>
+    <circle cx="151" cy="307" r="2"/>
+    <circle cx="177" cy="327" r="3"/>
+    <circle cx="194" cy="340" r="4"/>
+    <circle cx="217" cy="350" r="3"/>
+    <circle cx="307" cy="351" r="3"/>
+    <circle cx="328" cy="343" r="2"/>
+    <circle cx="347" cy="330" r="4"/>
+    <circle cx="366" cy="312" r="2"/>
+    <circle cx="381" cy="296" r="5"/>
+    <circle cx="389" cy="276" r="2"/>
+    <circle cx="393" cy="255" r="4"/>
+  </g>
+
+  <g transform="translate(217 101)">
+    <path d="M19 38C8 30 3 18 8 9C13 0 27 1 32 13C34 18 34 24 31 30L53 43L59 33C61 29 66 28 70 31C74 34 75 39 72 43L63 56C60 61 54 62 49 59L25 46C22 44 20 41 19 38Z" fill="#7B2A0E"/>
+    <path d="M0 34C-4 22 -1 9 10 3C21 -3 35 0 42 10" stroke="#7B2A0E" stroke-width="3" stroke-linecap="round"/>
+    <path d="M5 31C4 21 9 12 18 7" stroke="#7B2A0E" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M13 36C13 25 18 17 28 13" stroke="#7B2A0E" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M22 40C24 28 31 21 40 17" stroke="#7B2A0E" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M49 59L60 44" stroke="#9FD9D2" stroke-width="9" stroke-linecap="round"/>
+    <path d="M58 47L67 53" stroke="#F2D77A" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <path d="M302 117C302 107 311 102 319 102C327 102 331 108 331 114C331 108 336 102 344 102C353 102 360 108 360 117C360 134 334 147 331 149C328 147 302 134 302 117Z" fill="#7B2A0E"/>
+
+  <text x="256" y="206" text-anchor="middle" fill="#7B2A0E" font-family="Brush Script MT, Segoe Script, cursive" font-size="42">Confeitaria</text>
+  <text x="256" y="272" text-anchor="middle" fill="#7B2A0E" font-family="Georgia, Times New Roman, serif" font-weight="700" font-size="64">Duas</text>
+  <text x="256" y="329" text-anchor="middle" fill="#7B2A0E" font-family="Georgia, Times New Roman, serif" font-weight="700" font-size="56">vontades</text>
+  <text x="256" y="384" text-anchor="middle" fill="#7B2A0E" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">Bolos salgados</text>
+  <text x="256" y="412" text-anchor="middle" fill="#7B2A0E" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">e doces</text>
+</svg>

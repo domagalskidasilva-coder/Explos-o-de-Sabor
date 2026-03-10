@@ -17,6 +17,7 @@ function getInitialCategoryFilter(): CategoryFilter {
   const queryCategory = new URLSearchParams(window.location.search).get(
     "categoria",
   );
+
   return queryCategory === "doce" ||
     queryCategory === "salgado" ||
     queryCategory === "bebida"
@@ -54,7 +55,7 @@ export default function MenuExplorer({ products }: { products: Product[] }) {
       : categoryFilter;
 
   const availableSubCategories = useMemo(() => {
-    const filteredProducts =
+    const filteredByCategory =
       resolvedCategoryFilter === "todos"
         ? products
         : products.filter(
@@ -64,7 +65,7 @@ export default function MenuExplorer({ products }: { products: Product[] }) {
     return [
       ALL_SUBCATEGORIES,
       ...Array.from(
-        new Set(filteredProducts.map((product) => product.subcategoria)),
+        new Set(filteredByCategory.map((product) => product.subcategoria)),
       ).sort((left, right) => left.localeCompare(right, "pt-BR")),
     ];
   }, [products, resolvedCategoryFilter]);
@@ -84,19 +85,17 @@ export default function MenuExplorer({ products }: { products: Product[] }) {
         `${product.nome} ${product.descricaoCurta} ${product.subcategoria}`
           .toLocaleLowerCase("pt-BR")
           .includes(normalizedSearch);
+
       return matchesCategory && matchesSubCategory && matchesSearch;
     });
-  }, [products, resolvedCategoryFilter, subCategoryFilter, deferredSearchTerm]);
+  }, [deferredSearchTerm, products, resolvedCategoryFilter, subCategoryFilter]);
 
   const groupedProducts = useMemo(() => {
-    return filteredProducts.reduce<Record<string, Product[]>>(
-      (groups, product) => {
-        const currentGroup = groups[product.subcategoria] ?? [];
-        groups[product.subcategoria] = [...currentGroup, product];
-        return groups;
-      },
-      {},
-    );
+    return filteredProducts.reduce<Record<string, Product[]>>((groups, product) => {
+      const current = groups[product.subcategoria] ?? [];
+      groups[product.subcategoria] = [...current, product];
+      return groups;
+    }, {});
   }, [filteredProducts]);
 
   const orderedGroupEntries = useMemo(() => {
@@ -116,108 +115,71 @@ export default function MenuExplorer({ products }: { products: Product[] }) {
     });
   }
 
-  const highlightedCount = useMemo(
-    () => filteredProducts.filter((product) => product.destaque).length,
-    [filteredProducts],
-  );
-
   return (
-    <div className="space-y-10">
-      <section className="panel-soft overflow-hidden p-5 sm:p-6 lg:p-7">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] xl:items-end">
+    <div className="min-w-0 space-y-4 overflow-x-clip sm:space-y-5">
+      <section className="panel-soft p-3 sm:sticky sm:top-4 sm:z-20 sm:p-4">
+        <div className="grid gap-3">
           <div>
-            <p className="section-kicker text-cocoa/82">Explorar produtos</p>
-            <h2 className="mt-3 text-3xl leading-tight text-espresso sm:text-4xl lg:text-[3.15rem]">
-              Filtros compactos, leitura direta e navegação rápida entre as opções.
-            </h2>
-            <p className="mt-4 max-w-2xl text-sm leading-8 text-espresso/76 sm:text-base">
-              Use a busca para chegar no produto com mais velocidade ou refine
-              por categoria e coleção sem perder o contexto do cardápio.
-            </p>
+            <label htmlFor="menu-search" className="field-label text-[0.72rem]">
+              Buscar
+            </label>
+            <input
+              id="menu-search"
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Ex.: combo, bolo, coca"
+              className="input-surface mt-2 h-12 text-sm"
+            />
+          </div>
 
-            <div className="mt-5 flex flex-wrap gap-3">
-              <span className="info-chip border-[rgba(124,20,46,0.12)] bg-white/74 text-cocoa/82">
-                {filteredProducts.length} resultados
-              </span>
-              <span className="info-chip border-[rgba(124,20,46,0.12)] bg-white/74 text-cocoa/82">
-                {highlightedCount} destaques
-              </span>
-              <span className="info-chip border-[rgba(124,20,46,0.12)] bg-white/74 text-cocoa/82">
-                {availableSubCategories.length - 1} coleções
-              </span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <p className="field-label text-[0.72rem]">Categorias</p>
+              <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-cocoa/54">
+                {filteredProducts.length} itens
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => applyCategoryFilter("todos")}
+                className={`min-w-0 rounded-full px-3 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.06em] transition sm:text-[0.78rem] ${
+                  resolvedCategoryFilter === "todos"
+                    ? "bg-espresso text-sugar shadow-[0_12px_24px_rgba(73,7,29,0.18)]"
+                    : "border border-caramel/14 bg-white text-espresso"
+                }`}
+              >
+                Todos ({categoryCounts.todos})
+              </button>
+              {visibleCategories.map((category) => {
+                const active = resolvedCategoryFilter === category.id;
+
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => applyCategoryFilter(category.id)}
+                    className={`min-w-0 rounded-full px-3 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.06em] transition sm:text-[0.78rem] ${
+                      active
+                        ? "bg-espresso text-sugar shadow-[0_12px_24px_rgba(73,7,29,0.18)]"
+                        : "border border-caramel/14 bg-white text-espresso"
+                    }`}
+                  >
+                    {category.label} ({categoryCounts[category.id]})
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="grid gap-4">
-            <div className="panel-inset p-4 sm:p-5">
-              <label
-                htmlFor="menu-search"
-                className="section-kicker text-cocoa/74"
-              >
-                Buscar no cardápio
-              </label>
-              <input
-                id="menu-search"
-                type="search"
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Ex.: bolo, combo, suco..."
-                className="input-surface mt-3 text-sm font-semibold"
-              />
-            </div>
-
-            <div className="panel-inset p-4 sm:p-5">
-              <p className="section-kicker text-cocoa/74">Categoria</p>
-              <div
-                className="mt-3 flex flex-wrap gap-2.5"
-                role="tablist"
-                aria-label="Filtrar por categoria"
-              >
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={resolvedCategoryFilter === "todos"}
-                  onClick={() => applyCategoryFilter("todos")}
-                  className={`inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-extrabold transition sm:px-5 ${
-                    resolvedCategoryFilter === "todos"
-                      ? "bg-espresso text-sugar shadow-[0_14px_28px_rgba(63,11,28,0.18)]"
-                      : "border border-[rgba(124,20,46,0.14)] bg-white/88 text-espresso hover:bg-oat/90"
-                  }`}
-                >
-                  Todos ({categoryCounts.todos})
-                </button>
-                {visibleCategories.map((category) => {
-                  const active = resolvedCategoryFilter === category.id;
-                  const count = categoryCounts[category.id];
-
-                  return (
-                    <button
-                      key={category.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={active}
-                      onClick={() => applyCategoryFilter(category.id)}
-                      className={`inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-extrabold transition sm:px-5 ${
-                        active
-                          ? "bg-espresso text-sugar shadow-[0_14px_28px_rgba(63,11,28,0.18)]"
-                          : "border border-[rgba(124,20,46,0.14)] bg-white/88 text-espresso hover:bg-oat/90"
-                      }`}
-                    >
-                      {category.label} ({count})
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="panel-inset p-4 sm:p-5">
-              <p className="section-kicker text-cocoa/74">Coleção</p>
-              <div
-                className="mt-3 flex flex-wrap gap-2"
-                aria-label="Filtrar por subcategoria"
-              >
+          {availableSubCategories.length > 1 ? (
+            <div className="space-y-2">
+              <p className="field-label text-[0.72rem]">Coleções</p>
+              <div className="flex flex-wrap gap-2">
                 {availableSubCategories.map((subCategory) => {
                   const active = subCategoryFilter === subCategory;
+
                   return (
                     <button
                       key={subCategory}
@@ -225,11 +187,10 @@ export default function MenuExplorer({ products }: { products: Product[] }) {
                       onClick={() =>
                         startTransition(() => setSubCategoryFilter(subCategory))
                       }
-                      aria-pressed={active}
-                      className={`inline-flex min-h-10 items-center justify-center rounded-full px-4 text-xs font-extrabold uppercase tracking-[0.1em] transition ${
+                      className={`min-w-0 rounded-full px-3 py-2 text-[0.64rem] font-extrabold uppercase tracking-[0.06em] transition sm:text-[0.68rem] ${
                         active
-                          ? "bg-espresso text-sugar shadow-[0_14px_28px_rgba(63,11,28,0.18)]"
-                          : "border border-[rgba(124,20,46,0.12)] bg-sugar/88 text-espresso hover:bg-oat"
+                          ? "bg-cocoa text-sugar"
+                          : "border border-caramel/12 bg-white text-espresso/80"
                       }`}
                     >
                       {subCategory}
@@ -238,45 +199,61 @@ export default function MenuExplorer({ products }: { products: Product[] }) {
                 })}
               </div>
             </div>
+          ) : null}
+
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-[1.1rem] border border-caramel/10 bg-white/72 px-3.5 py-2.5">
+            <p className="min-w-0 text-sm font-semibold text-espresso/74">
+              {filteredProducts.length}{" "}
+              {filteredProducts.length === 1
+                ? "produto encontrado"
+                : "produtos encontrados"}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                startTransition(() => {
+                  setSearchTerm("");
+                  setCategoryFilter("todos");
+                  setSubCategoryFilter(ALL_SUBCATEGORIES);
+                });
+              }}
+              className="text-[0.7rem] font-extrabold uppercase tracking-[0.1em] text-cocoa/58"
+            >
+              Limpar
+            </button>
           </div>
         </div>
       </section>
 
       {orderedGroupEntries.length === 0 ? (
-        <section className="panel p-8 text-center sm:p-10">
-          <p className="section-kicker text-cocoa/72">Sem resultados</p>
-          <h3 className="mt-3 text-3xl text-espresso sm:text-4xl">
-            Nenhum item encontrado com os filtros atuais.
-          </h3>
-          <p className="mt-3 text-base leading-8 text-espresso/80">
-            Ajuste a categoria, limpe a busca ou escolha outra coleção para ver
-            opções disponíveis.
+        <section className="panel p-6 text-center">
+          <h3 className="text-2xl text-espresso">Nenhum item encontrado.</h3>
+          <p className="mt-3 text-sm leading-7 text-espresso/74">
+            Tente outra busca ou troque a categoria.
           </p>
         </section>
       ) : (
-        <>
-          {orderedGroupEntries.map(([subCategory, items]) => (
-            <section key={subCategory} className="space-y-5">
-              <div className="flex flex-col gap-3 border-b border-[rgba(124,20,46,0.12)] pb-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="section-kicker text-cocoa/82">Coleção</p>
-                  <h3 className="mt-2 text-3xl text-espresso sm:text-4xl">
-                    {subCategory}
-                  </h3>
-                </div>
-                <p className="info-chip border-[rgba(124,20,46,0.14)] bg-white/72 text-cocoa/84">
-                  {items.length}{" "}
-                  {items.length === 1 ? "item disponível" : "itens disponíveis"}
-                </p>
+        orderedGroupEntries.map(([subCategory, items]) => (
+          <section key={subCategory} className="space-y-3">
+            <div className="flex items-center justify-between gap-3 px-1">
+              <div>
+                <p className="section-kicker text-cocoa/68">Coleção</p>
+                <h2 className="mt-1 text-[1.45rem] leading-tight text-espresso sm:text-[1.7rem]">
+                  {subCategory}
+                </h2>
               </div>
-              <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
-                {items.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </section>
-          ))}
-        </>
+              <span className="info-chip bg-white/74 text-cocoa/82">
+                {items.length} itens
+              </span>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {items.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        ))
       )}
     </div>
   );

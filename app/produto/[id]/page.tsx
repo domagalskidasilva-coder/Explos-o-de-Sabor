@@ -39,11 +39,11 @@ export default async function ProductDetailPage({
   return (
     <main
       id="conteudo"
-      className="mx-auto max-w-7xl px-4 pb-16 pt-6 lg:px-6 lg:pb-24 lg:pt-8"
+      className="mx-auto max-w-6xl px-4 pb-16 pt-4 lg:px-6 lg:pb-24 lg:pt-6"
     >
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)]">
+      <section className="grid gap-5 lg:grid-cols-[minmax(0,0.98fr)_minmax(0,1.02fr)]">
         <article className="panel-soft overflow-hidden">
-          <div className="relative aspect-[4/3] overflow-hidden bg-[linear-gradient(140deg,rgba(255,253,249,1),rgba(236,210,152,1))]">
+          <div className="relative aspect-[1.08/1] overflow-hidden bg-[linear-gradient(140deg,rgba(255,253,249,1),rgba(236,210,152,1))] sm:aspect-[4/3]">
             <Image
               src={product.imagem}
               alt={`Foto de ${product.nome}`}
@@ -53,10 +53,10 @@ export default async function ProductDetailPage({
               priority
             />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(47,7,22,0.04)_0%,rgba(47,7,22,0.2)_55%,rgba(47,7,22,0.74)_100%)]" />
-            <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-end justify-between gap-4">
+            <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-end justify-between gap-3 sm:bottom-5 sm:left-5 sm:right-5 sm:gap-4">
               <div>
                 <p className="section-kicker text-biscuit/80">{product.subcategoria}</p>
-                <h1 className="mt-2 text-4xl leading-tight text-sugar sm:text-5xl">
+                <h1 className="mt-2 max-w-[12ch] text-3xl leading-tight text-sugar sm:text-5xl">
                   {product.nome}
                 </h1>
               </div>
@@ -68,8 +68,8 @@ export default async function ProductDetailPage({
             </div>
           </div>
 
-          <div className="p-6 sm:p-8">
-            <p className="text-base leading-8 text-espresso/78">
+          <div className="p-5 sm:p-7">
+            <p className="text-sm leading-7 text-espresso/78 sm:text-base sm:leading-8">
               {product.descricaoCurta}
             </p>
 
@@ -81,17 +81,17 @@ export default async function ProductDetailPage({
                 </p>
               </div>
               <div className="panel-inset p-4">
-                <p className="section-kicker text-cocoa/72">Fluxo</p>
+                <p className="section-kicker text-cocoa/72">Pedido</p>
                 <p className="mt-2 text-sm leading-7 text-espresso/74">
                   {product.variacoes && product.variacoes.length > 0
-                    ? "Escolha o sabor, veja o valor e adicione ao carrinho."
-                    : "Confira o produto, escolha adicionais e siga com o pedido."}
+                    ? "Escolha sabor, veja o valor e adicione."
+                    : "Escolha adicionais e siga com o pedido."}
                 </p>
               </div>
             </div>
 
             <div className="mt-6">
-              <Link href="/cardapio" className="button-secondary px-6">
+              <Link href="/cardapio" className="button-secondary px-5">
                 Voltar para o cardápio
               </Link>
             </div>

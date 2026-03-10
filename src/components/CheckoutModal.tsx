@@ -322,26 +322,25 @@ export default function CheckoutModal() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="checkout-modal-title"
-            className="fixed left-1/2 top-1/2 z-[60] flex max-h-[90vh] w-[min(94vw,70rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[2rem] border border-caramel/14 bg-[linear-gradient(180deg,rgba(255,252,249,0.99),rgba(247,238,228,0.99))] shadow-[0_32px_80px_rgba(34,6,17,0.3)]"
+            className="fixed left-1/2 top-1/2 z-[60] flex max-h-[90vh] w-[min(96vw,64rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[2rem] border border-caramel/14 bg-[linear-gradient(180deg,rgba(255,252,249,0.99),rgba(247,238,228,0.99))] shadow-[0_32px_80px_rgba(34,6,17,0.3)]"
             initial={{ opacity: 0, y: 20, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             transition={{ duration: 0.24, ease: "easeOut" }}
           >
-            <div className="relative overflow-hidden border-b border-caramel/14 bg-[linear-gradient(135deg,rgba(70,9,27,0.98),rgba(107,14,38,0.97),rgba(167,123,43,0.92))] px-5 py-5 text-sugar sm:px-6">
+            <div className="relative overflow-hidden border-b border-caramel/14 bg-[linear-gradient(135deg,rgba(70,9,27,0.98),rgba(107,14,38,0.97),rgba(167,123,43,0.92))] px-4 py-4 text-sugar sm:px-5">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16),transparent_70%)]" />
               <div className="relative flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="section-kicker text-biscuit/84">Checkout</p>
                   <h2
                     id="checkout-modal-title"
-                    className="mt-2 text-3xl text-sugar"
+                    className="mt-2 text-2xl text-sugar"
                   >
-                    Finalize em poucos campos.
+                    Finalize seu pedido
                   </h2>
-                  <p className="mt-2 text-sm leading-7 text-sugar/76">
-                    O site registra o pedido e abre uma nova aba com a mensagem
-                    pronta no WhatsApp.
+                  <p className="mt-1 text-sm leading-6 text-sugar/76">
+                    Preencha o essencial e envie no WhatsApp.
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <span className="inline-flex items-center rounded-full border border-white/14 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-biscuit">
@@ -355,7 +354,7 @@ export default function CheckoutModal() {
                 <button
                   type="button"
                   onClick={handleCloseCheckout}
-                  className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-white/14 bg-white/10 text-sm font-bold text-sugar transition hover:bg-white/16"
+                  className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/14 bg-white/10 text-sm font-bold text-sugar transition hover:bg-white/16"
                   aria-label="Fechar checkout"
                 >
                   <span aria-hidden="true" className="text-xl leading-none">
@@ -365,9 +364,9 @@ export default function CheckoutModal() {
               </div>
             </div>
 
-            <div className="overflow-y-auto px-5 py-5 sm:px-6">
+            <div className="overflow-y-auto px-4 py-4 sm:px-5">
               <form
-                className="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_22rem]"
+                className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_20rem]"
                 onSubmit={handleSubmit}
                 noValidate
               >
@@ -376,7 +375,7 @@ export default function CheckoutModal() {
                     <p className="section-kicker text-cocoa/76">
                       Dados do cliente
                     </p>
-                    <div className="mt-4 grid gap-5 sm:grid-cols-2">
+                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
                       <div className="sm:col-span-2">
                         <label htmlFor="checkout-nome" className="field-label">
                           Nome

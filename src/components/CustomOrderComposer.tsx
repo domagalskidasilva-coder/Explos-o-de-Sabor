@@ -78,19 +78,18 @@ export default function CustomOrderComposer() {
   }
 
   return (
-    <section className="mt-8 overflow-hidden rounded-[1.9rem] border border-caramel/18 bg-[linear-gradient(180deg,rgba(255,252,249,0.95),rgba(247,239,229,0.92))] shadow-[0_24px_60px_rgba(92,35,17,0.08)]">
-      <div className="border-b border-caramel/12 bg-[linear-gradient(135deg,rgba(70,9,27,0.94),rgba(107,14,38,0.92),rgba(167,123,43,0.86))] px-5 py-5 text-sugar sm:px-6">
+    <section className="mt-8 overflow-hidden rounded-[1.8rem] border border-caramel/18 bg-[linear-gradient(180deg,rgba(255,252,249,0.95),rgba(247,239,229,0.92))] shadow-[0_24px_60px_rgba(92,35,17,0.08)]">
+      <div className="border-b border-caramel/12 bg-[linear-gradient(135deg,rgba(70,9,27,0.94),rgba(107,14,38,0.92),rgba(167,123,43,0.86))] px-5 py-4 text-sugar sm:px-6">
         <p className="section-kicker text-biscuit/84">Pedido personalizado</p>
-        <h3 className="mt-2 text-3xl leading-tight text-sugar sm:text-4xl">
-          Monte um pedido sob medida com antecedência
+        <h3 className="mt-2 text-2xl leading-tight text-sugar sm:text-3xl">
+          Pedido sob medida
         </h3>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-sugar/76">
-          Se quiser algo fora do cardápio, descreva a ideia e envie a solicitação
-          pronta no WhatsApp da loja.
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-sugar/76">
+          Descreva o que você quer e envie a solicitação pronta no WhatsApp.
         </p>
       </div>
 
-      <div className="grid gap-5 px-5 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="grid gap-4 px-5 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="soft-card p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -110,11 +109,10 @@ export default function CustomOrderComposer() {
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Ex.: Quero uma bandeja personalizada com combinação de doces e salgados, tema da festa e horário de entrega."
-              className="textarea-surface mt-3 min-h-36"
+              className="textarea-surface mt-3 min-h-32"
             />
-            <p className="mt-2 text-sm leading-7 text-espresso/68">
-              Seja específico sobre quantidade, tema, data e preferências. Isso
-              ajuda a loja a responder mais rápido.
+            <p className="mt-2 text-sm leading-6 text-espresso/68">
+              Informe quantidade, tema e data para facilitar o retorno.
             </p>
             <p className="mt-2 text-xs text-espresso/62">
               {remainingChars >= 0
@@ -173,7 +171,7 @@ export default function CustomOrderComposer() {
 
           <button
             type="submit"
-            className="button-primary px-6"
+            className="button-primary w-full justify-center px-6 sm:w-auto"
             disabled={!whatsappReady}
           >
             Enviar pedido personalizado
@@ -183,10 +181,10 @@ export default function CustomOrderComposer() {
         <aside className="space-y-4">
           <section className="dark-card p-5 text-sugar">
             <p className="section-kicker text-biscuit/84">Como funciona</p>
-            <ul className="mt-4 space-y-3 text-sm leading-7 text-sugar/76">
-              <li>Descreva o pedido com o máximo de contexto relevante.</li>
-              <li>Informe nome e endereço para facilitar o retorno.</li>
-              <li>A solicitação abre pronta no WhatsApp da loja.</li>
+            <ul className="mt-4 space-y-3 text-sm leading-6 text-sugar/76">
+              <li>Descreva o pedido.</li>
+              <li>Informe nome e endereço.</li>
+              <li>Envie direto no WhatsApp.</li>
             </ul>
           </section>
 

@@ -29,10 +29,6 @@ export default function RootShell({ children }: { children: ReactNode }) {
         <div className="site-atmosphere__blob site-atmosphere__blob--cocoa" />
       </div>
       <div className="relative z-10 min-h-screen overflow-x-clip">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[linear-gradient(180deg,rgba(255,247,249,0.56),rgba(255,247,249,0))]"
-        />
         <Header />
         <main className="relative">{children}</main>
         <Footer />

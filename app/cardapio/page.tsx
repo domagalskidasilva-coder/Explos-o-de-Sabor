@@ -22,69 +22,44 @@ export default async function CardapioPage() {
   return (
     <main
       id="conteudo"
-      className="mx-auto max-w-7xl px-4 pb-16 pt-6 lg:px-6 lg:pb-24 lg:pt-8"
+      className="mx-auto max-w-7xl px-3 pb-16 pt-3 sm:px-4 lg:px-6 lg:pb-24"
     >
-      <section className="space-y-6">
-        <header className="editorial-shell px-5 py-6 sm:px-7 sm:py-7 lg:px-8">
-          <div>
-            <p className="section-kicker text-cocoa/78">Cardápio oficial</p>
-            <h1 className="mt-3 max-w-5xl text-4xl leading-tight text-espresso sm:text-5xl lg:text-[3.6rem]">
-              Explore o menu com leitura rápida e foco no que realmente está
-              disponível.
-            </h1>
-            <p className="mt-4 max-w-4xl text-sm leading-8 text-espresso/74 sm:text-base">
-              O cardápio foi reorganizado para facilitar a decisão em qualquer
-              tela. Filtre por categoria, navegue por coleção e avance para o
-              pedido sem ficar caçando informação.
-            </p>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <span className="info-chip bg-white/78 text-cocoa/84">
-                {totalProducts} {totalProducts === 1 ? "item ativo" : "itens ativos"}
-              </span>
-              <span className="info-chip bg-white/78 text-cocoa/84">
-                {totalFeatured} em destaque
-              </span>
-              <span className="info-chip bg-white/78 text-cocoa/84">
-                Contato: {telefone ?? "Telefone ainda não configurado."}
-              </span>
+      <section className="space-y-4">
+        <header className="panel p-4 sm:p-5">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0 max-w-2xl">
+              <p className="section-kicker text-cocoa/72">Cardápio</p>
+              <h1 className="mt-2 text-[2rem] leading-[1.05] text-espresso sm:text-[2.5rem] lg:text-[3.25rem]">
+                Escolha rápido.
+              </h1>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-espresso/72 sm:text-base">
+                Busca, categorias e pedido direto sem excesso de informação.
+              </p>
             </div>
+            <Link
+              href="/"
+              className="button-ghost h-11 w-full justify-center px-5 sm:w-auto"
+            >
+              Voltar
+            </Link>
+          </div>
+
+          <div className="mt-4 grid gap-2.5 sm:flex sm:flex-wrap">
+            <span className="info-chip bg-white/78 text-cocoa/84">
+              {totalProducts} itens
+            </span>
+            <span className="info-chip bg-white/78 text-cocoa/84">
+              {totalFeatured} destaques
+            </span>
+            {telefone ? (
+              <span className="info-chip max-w-full bg-white/78 text-cocoa/84 sm:max-w-none">
+                WhatsApp {telefone}
+              </span>
+            ) : null}
           </div>
         </header>
 
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
-          <div className="min-w-0">
-            <MenuExplorer products={products} />
-          </div>
-
-          <aside className="space-y-4 xl:sticky xl:top-28 xl:h-fit">
-            <div className="panel-soft px-5 py-5">
-              <p className="section-kicker text-cocoa/76">Pedido direto</p>
-              <h2 className="mt-3 text-3xl leading-tight text-espresso">
-                Escolha a categoria e monte seu pedido com menos atrito.
-              </h2>
-              <p className="mt-3 text-sm leading-7 text-espresso/72">
-                Os produtos exibidos aqui seguem o cadastro ativo da empresa e
-                já refletem a disponibilidade atual.
-              </p>
-            </div>
-
-            <div className="dark-card px-5 py-5 text-sugar">
-              <p className="section-kicker text-biscuit/84">Contato</p>
-              <p className="mt-3 text-sm leading-7 text-sugar/78">
-                {telefone ?? "Telefone ainda não configurado."}
-              </p>
-              <p className="mt-2 text-sm leading-7 text-sugar/68">
-                {LOJA_INFO.observacaoKit}
-              </p>
-
-            </div>
-
-            <Link href="/" className="button-secondary w-full">
-              Voltar para início
-            </Link>
-          </aside>
-        </section>
+        <MenuExplorer products={products} />
       </section>
     </main>
   );

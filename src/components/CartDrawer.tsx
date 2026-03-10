@@ -60,23 +60,22 @@ export default function CartDrawer() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="cart-drawer-title"
-            className="fixed right-0 top-0 z-[60] flex h-full w-full max-w-xl flex-col border-l border-caramel/16 bg-[linear-gradient(180deg,rgba(255,252,249,0.99),rgba(248,239,229,0.99))] shadow-[0_30px_80px_rgba(34,6,17,0.3)]"
+            className="fixed right-0 top-0 z-[60] flex h-full w-full max-w-lg flex-col border-l border-caramel/16 bg-[linear-gradient(180deg,rgba(255,252,249,0.99),rgba(248,239,229,0.99))] shadow-[0_30px_80px_rgba(34,6,17,0.3)]"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 260, damping: 30 }}
           >
-            <div className="relative overflow-hidden border-b border-caramel/14 bg-[linear-gradient(135deg,rgba(70,9,27,0.98),rgba(107,14,38,0.97),rgba(167,123,43,0.92))] px-5 py-5 text-sugar sm:px-6">
+            <div className="relative overflow-hidden border-b border-caramel/14 bg-[linear-gradient(135deg,rgba(70,9,27,0.98),rgba(107,14,38,0.97),rgba(167,123,43,0.92))] px-4 py-4 text-sugar sm:px-5">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16),transparent_68%)]" />
               <div className="relative flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="section-kicker text-biscuit/84">Carrinho</p>
-                  <h2 id="cart-drawer-title" className="mt-2 text-3xl text-sugar">
-                    Revise os itens antes de confirmar.
+                  <h2 id="cart-drawer-title" className="mt-2 text-2xl text-sugar">
+                    Seu pedido
                   </h2>
-                  <p className="mt-2 text-sm leading-7 text-sugar/76">
-                    Tudo o que estiver aqui entra direto no checkout e depois no
-                    WhatsApp.
+                  <p className="mt-1 text-sm leading-6 text-sugar/76">
+                    Revise rápido e siga para finalizar.
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <span className="inline-flex items-center rounded-full border border-white/14 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-biscuit">
@@ -91,7 +90,7 @@ export default function CartDrawer() {
                   ref={closeButtonRef}
                   type="button"
                   onClick={closeCart}
-                  className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-white/14 bg-white/10 text-sm font-bold text-sugar transition hover:bg-white/16"
+                  className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/14 bg-white/10 text-sm font-bold text-sugar transition hover:bg-white/16"
                   aria-label="Fechar carrinho"
                 >
                   <span aria-hidden="true" className="text-xl leading-none">
@@ -101,7 +100,7 @@ export default function CartDrawer() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+            <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
               {items.length === 0 ? (
                 <div className="dark-card flex min-h-full flex-col items-center justify-center px-6 py-10 text-center text-sugar">
                   <span className="inline-flex h-16 w-16 items-center justify-center rounded-full border border-white/12 bg-white/10 text-sm font-bold uppercase tracking-[0.12em]">
@@ -123,7 +122,7 @@ export default function CartDrawer() {
                         <p className="section-kicker text-cocoa/78">
                           Resumo rápido
                         </p>
-                        <p className="mt-2 text-lg text-espresso">
+                        <p className="mt-1 text-base font-semibold text-espresso">
                           {totalItems} {totalItems === 1 ? "unidade" : "unidades"} adicionadas
                         </p>
                       </div>
@@ -140,15 +139,15 @@ export default function CartDrawer() {
 
                   <ul className="space-y-4">
                   {items.map((item) => (
-                      <li
+                    <li
                         key={item.lineId}
                         className="soft-card overflow-hidden p-0"
                       >
-                        <div className="border-b border-caramel/12 px-4 py-4">
+                        <div className="border-b border-caramel/12 px-4 py-3.5">
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-xl text-espresso">
+                                <p className="text-lg font-bold text-espresso">
                                   {item.product.nome}
                                 </p>
                                 {item.variationName ? (
@@ -157,7 +156,7 @@ export default function CartDrawer() {
                                   </span>
                                 ) : null}
                               </div>
-                              <p className="mt-2 text-sm leading-7 text-espresso/72">
+                              <p className="mt-1.5 text-sm leading-6 text-espresso/72">
                                 {item.product.descricaoCurta}
                               </p>
                             </div>
@@ -166,14 +165,14 @@ export default function CartDrawer() {
                               onClick={() =>
                                 remove(item.productId, item.variationId)
                               }
-                              className="inline-flex min-h-10 items-center justify-center rounded-full border border-caramel/14 bg-sugar px-4 text-sm font-bold text-espresso transition hover:bg-oat"
+                              className="inline-flex min-h-9 items-center justify-center rounded-full border border-caramel/14 bg-sugar px-3 text-xs font-bold uppercase tracking-[0.08em] text-espresso transition hover:bg-oat"
                             >
                               Remover
                             </button>
                           </div>
                         </div>
 
-                        <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
                           <div className="inline-flex items-center gap-2 rounded-full border border-caramel/14 bg-sugar p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
                             <button
                               type="button"
@@ -224,16 +223,13 @@ export default function CartDrawer() {
               )}
             </div>
 
-            <div className="border-t border-caramel/14 bg-sugar/55 px-5 py-5 backdrop-blur sm:px-6">
+            <div className="border-t border-caramel/14 bg-sugar/55 px-4 py-4 backdrop-blur sm:px-5">
               <div className="dark-card px-5 py-5 text-sugar">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <p className="section-kicker text-biscuit/84">
-                      Pronto para finalizar
-                    </p>
-                    <p className="mt-2 text-sm leading-7 text-sugar/72">
-                      Confira os dados no checkout antes de abrir o pedido no
-                      WhatsApp.
+                    <p className="section-kicker text-biscuit/84">Finalizar</p>
+                    <p className="mt-2 text-sm leading-6 text-sugar/72">
+                      Confira os dados e envie o pedido.
                     </p>
                   </div>
                   <div className="text-left sm:text-right">

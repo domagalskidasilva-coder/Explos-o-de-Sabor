@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requireAdminRequest } from "@/src/lib/admin-auth";
 import { getStoreSettings, updateStoreSettings } from "@/src/lib/repositories";
+import { formatWeeklyScheduleSummary, type WeeklyScheduleDay } from "@/src/lib/store-schedule";
 
 export async function GET(request: Request) {
   try {
@@ -32,18 +33,33 @@ export async function PUT(request: Request) {
       serviceDays?: string;
       openingTime?: string;
       closingTime?: string;
+      weeklySchedule?: WeeklyScheduleDay[];
       isClosed?: boolean;
       closureReason?: string | null;
       closureStartDate?: string | null;
       closureEndDate?: string | null;
     };
 
-    if (!payload.serviceDays?.trim()) {
-      throw new Error("Informe os dias de atendimento da loja.");
+    if (!Array.isArray(payload.weeklySchedule) || payload.weeklySchedule.length !== 7) {
+      throw new Error("Informe a grade semanal completa da loja.");
     }
 
-    if (!payload.openingTime || !payload.closingTime) {
-      throw new Error("Horario de abertura e fechamento sao obrigatorios.");
+    const openDays = payload.weeklySchedule.filter((day) => day.open);
+
+    if (openDays.length === 0) {
+      throw new Error("Marque pelo menos um dia de funcionamento.");
+    }
+
+    for (const day of openDays) {
+      if (!day.openingTime || !day.closingTime) {
+        throw new Error(`Preencha abertura e fechamento para ${day.label}.`);
+      }
+
+      if (day.closingTime <= day.openingTime) {
+        throw new Error(
+          `O fechamento de ${day.label} precisa ser depois da abertura.`,
+        );
+      }
     }
 
     if (
@@ -65,10 +81,14 @@ export async function PUT(request: Request) {
       );
     }
 
+    const firstOpenDay = openDays[0]!;
+    const serviceDays = formatWeeklyScheduleSummary(payload.weeklySchedule);
+
     await updateStoreSettings({
-      serviceDays: payload.serviceDays.trim(),
-      openingTime: payload.openingTime,
-      closingTime: payload.closingTime,
+      serviceDays,
+      openingTime: firstOpenDay.openingTime,
+      closingTime: firstOpenDay.closingTime,
+      weeklySchedule: payload.weeklySchedule,
       isClosed: Boolean(payload.isClosed),
       closureReason: payload.closureReason ?? null,
       closureStartDate: payload.closureStartDate ?? null,

@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import CustomOrderComposer from "@/src/components/CustomOrderComposer";
 import ProductCard from "@/src/components/ProductCard";
 import { LOJA_INFO } from "@/src/data/loja";
 import { listProducts, getStoreSettings } from "@/src/lib/repositories";
+import { formatWeeklyScheduleLines } from "@/src/lib/store-schedule";
 import { getConfiguredStoreValue } from "@/src/lib/store-info";
 
 export const dynamic = "force-dynamic";
@@ -20,8 +22,9 @@ export default async function HomePage() {
   );
   const totalProdutos = products.length;
   const totalDestaques = destaques.length;
-  const horarioTexto = `${storeSettings.openingTime} as ${storeSettings.closingTime}`;
-  const atendimentoTexto = `${storeSettings.serviceDays} - ${horarioTexto}`;
+  const atendimentoLinhas = formatWeeklyScheduleLines(
+    storeSettings.weeklySchedule,
+  );
 
   return (
     <main
@@ -45,15 +48,15 @@ export default async function HomePage() {
               {LOJA_INFO.assinatura}
             </p>
             <p className="mt-5 max-w-2xl text-base leading-8 text-espresso/80 sm:text-lg">
-              {LOJA_INFO.slogan} Catalogo conectado ao painel da empresa,
-              vitrine clara e fechamento direto no WhatsApp sem complicacao.
+              {LOJA_INFO.slogan} Catálogo conectado ao painel da empresa,
+              vitrine clara e fechamento direto no WhatsApp sem complicação.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/cardapio" className="button-primary px-6">
-                Abrir cardapio
+                Abrir cardápio
               </Link>
               <Link href="/cardapio" className="button-secondary px-6">
-                Ver cardapio
+                Ver cardápio
               </Link>
             </div>
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -85,7 +88,7 @@ export default async function HomePage() {
                   <div className="absolute left-0 right-0 top-4 h-[82%] rounded-[2rem] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.72),rgba(217,174,73,0.2),transparent_72%)] blur-2xl" />
                   <Image
                     src="/images/mascote-explosao.png"
-                    alt="Mascote da Explosao de sabor"
+                    alt="Mascote da Explosão de Sabor"
                     width={760}
                     height={760}
                     sizes="(min-width: 1024px) 40vw, 70vw"
@@ -101,11 +104,13 @@ export default async function HomePage() {
                   <p className="mt-2 text-sm leading-7 text-espresso/76">
                     {storeSettings.serviceDays}
                   </p>
+                  <div className="text-sm leading-7 text-espresso/76">
+                    {atendimentoLinhas.map((linha) => (
+                      <p key={linha}>{linha}</p>
+                    ))}
+                  </div>
                   <p className="text-sm leading-7 text-espresso/76">
-                    {horarioTexto}
-                  </p>
-                  <p className="text-sm leading-7 text-espresso/76">
-                    {telefone ?? "Telefone ainda nao configurado."}
+                    {telefone ?? "Telefone ainda não configurado."}
                   </p>
                 </div>
                 <div className="rounded-[1.4rem] border border-caramel/18 bg-white/72 p-4">
@@ -131,11 +136,11 @@ export default async function HomePage() {
             <div>
               <p className="section-kicker text-cocoa/82">Produtos</p>
               <h2 className="mt-3 text-4xl leading-tight text-espresso sm:text-5xl">
-                Veja alguns itens direto na pagina inicial.
+                Veja alguns itens direto na página inicial.
               </h2>
               <p className="mt-4 max-w-2xl text-sm leading-8 text-espresso/76">
                 Para explorar tudo com filtro e categorias, use a aba
-                `Cardapio`.
+                `Cardápio`.
               </p>
             </div>
             <Link href="/cardapio" className="button-secondary px-6">
@@ -148,32 +153,34 @@ export default async function HomePage() {
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
+
+          <CustomOrderComposer />
         </article>
 
         <article className="panel overflow-hidden p-6 sm:p-8">
           <p className="section-kicker text-cocoa/82">Atendimento</p>
           <h2 className="mt-3 text-4xl leading-tight text-espresso sm:text-5xl">
-            Estrutura pronta para vender sem ruido.
+            Estrutura pronta para vender sem ruído.
           </h2>
           <p className="mt-4 max-w-xl text-sm leading-8 text-espresso/76">
-            A operacao do site prioriza leitura rapida, contato direto e
-            atualizacao pelo painel interno da empresa.
+            A operação do site prioriza leitura rápida, contato direto e
+            atualização pelo painel interno da empresa.
           </p>
 
           <div className="mt-6 grid gap-4">
             <div className="rounded-[1.6rem] border border-[rgba(124,20,46,0.12)] bg-white/70 p-4">
-              <p className="section-kicker text-cocoa/74">Endereco</p>
+              <p className="section-kicker text-cocoa/74">Endereço</p>
               <p className="mt-2 text-sm leading-7 text-espresso/76">
-                {endereco ?? "Endereco ainda nao configurado."}
+                {endereco ?? "Endereço ainda não configurado."}
               </p>
             </div>
             <div className="rounded-[1.6rem] border border-[rgba(124,20,46,0.12)] bg-white/70 p-4">
               <p className="section-kicker text-cocoa/74">Contato</p>
               <p className="mt-2 text-sm leading-7 text-espresso/76">
-                {telefone ?? "Contato ainda nao configurado."}
+                {telefone ?? "Contato ainda não configurado."}
               </p>
               <p className="text-sm leading-7 text-espresso/76">
-                Atendimento: {atendimentoTexto}
+                Atendimento: {storeSettings.serviceDays}
               </p>
               <p className="mt-2 text-sm leading-7 text-espresso/76">
                 {LOJA_INFO.observacaoKit}
@@ -196,7 +203,7 @@ export default async function HomePage() {
         <article className="panel-dark overflow-hidden px-6 py-7 text-sugar sm:px-8 sm:py-8">
           <p className="section-kicker text-biscuit/84">Como funciona</p>
           <h2 className="mt-3 text-4xl leading-tight text-sugar sm:text-5xl">
-            Escolha curta, decisao rapida e confirmacao humana.
+            Escolha curta, decisão rápida e confirmação humana.
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-8 text-sugar/74">
             O fluxo foi organizado para reduzir atrito sem perder contato direto
@@ -210,7 +217,7 @@ export default async function HomePage() {
                 Escolha
               </p>
               <p className="mt-2 text-sm leading-7 text-sugar/74">
-                Abra o cardapio e escolha os itens do pedido.
+                Abra o cardápio e escolha os itens do pedido.
               </p>
             </li>
             <li className="rounded-[1.6rem] border border-white/10 bg-white/7 p-4">
@@ -225,7 +232,7 @@ export default async function HomePage() {
             <li className="rounded-[1.6rem] border border-white/10 bg-white/7 p-4">
               <p className="text-3xl text-biscuit">03</p>
               <p className="mt-3 text-sm font-extrabold uppercase tracking-[0.12em] text-biscuit/82">
-                Confirmacao
+                Confirmação
               </p>
               <p className="mt-2 text-sm leading-7 text-sugar/74">
                 O pedido segue para o WhatsApp da empresa.
@@ -234,7 +241,7 @@ export default async function HomePage() {
           </ol>
 
           <Link href="/cardapio" className="button-primary mt-6 px-6">
-            Ir para o cardapio
+            Ir para o cardápio
           </Link>
         </article>
       </section>

@@ -3,7 +3,12 @@ import { createOrder } from "@/src/lib/repositories";
 import type { CartLine, PaymentMethod } from "@/src/types/cart";
 
 function isValidPaymentMethod(value: string): value is PaymentMethod {
-  return value === "credito" || value === "debito" || value === "dinheiro" || value === "pix";
+  return (
+    value === "credito" ||
+    value === "debito" ||
+    value === "dinheiro" ||
+    value === "pix"
+  );
 }
 
 export async function POST(request: Request) {
@@ -24,7 +29,10 @@ export async function POST(request: Request) {
       throw new Error("Endereco e obrigatorio.");
     }
 
-    if (!payload.paymentMethod || !isValidPaymentMethod(payload.paymentMethod)) {
+    if (
+      !payload.paymentMethod ||
+      !isValidPaymentMethod(payload.paymentMethod)
+    ) {
       throw new Error("Forma de pagamento invalida.");
     }
 
@@ -33,6 +41,9 @@ export async function POST(request: Request) {
           (line): line is CartLine =>
             Boolean(line) &&
             typeof line.productId === "string" &&
+            (!("variationId" in line) ||
+              typeof line.variationId === "string" ||
+              line.variationId == null) &&
             Number.isFinite(line.quantity),
         )
       : [];
@@ -47,7 +58,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Falha ao criar pedido.";
+    const message =
+      error instanceof Error ? error.message : "Falha ao criar pedido.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

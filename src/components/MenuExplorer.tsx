@@ -110,13 +110,13 @@ export default function MenuExplorer({ products }: { products: Product[] }) {
       <section className="panel overflow-hidden p-6 sm:p-7">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-end">
           <div>
-            <p className="section-kicker text-cocoa/82">Filtros do cardapio</p>
+            <p className="section-kicker text-cocoa/82">Filtros do cardápio</p>
             <h2 className="mt-3 text-4xl leading-tight text-espresso sm:text-5xl">
               Escolha a linha do pedido com poucos cliques.
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-8 text-espresso/76">
               Tudo aqui responde ao cadastro real da empresa. Produtos
-              indisponiveis ou pausados deixam de aparecer automaticamente.
+              indisponíveis ou pausados deixam de aparecer automaticamente.
             </p>
           </div>
 
@@ -166,7 +166,7 @@ export default function MenuExplorer({ products }: { products: Product[] }) {
             </div>
 
             <div>
-              <p className="section-kicker text-cocoa/74">Colecao</p>
+              <p className="section-kicker text-cocoa/74">Coleção</p>
               <div
                 className="mt-3 flex flex-wrap gap-2"
                 aria-label="Filtrar por subcategoria"
@@ -199,7 +199,7 @@ export default function MenuExplorer({ products }: { products: Product[] }) {
         <section className="panel p-8 text-center">
           <h3 className="text-3xl text-espresso">Nenhum item encontrado.</h3>
           <p className="mt-3 text-base leading-8 text-espresso/80">
-            Tente trocar os filtros para visualizar outras opcoes do cardapio.
+            Tente trocar os filtros para visualizar outras opções do cardápio.
           </p>
         </section>
       ) : (
@@ -213,7 +213,7 @@ export default function MenuExplorer({ products }: { products: Product[] }) {
                 </div>
                 <p className="info-chip border-[rgba(124,20,46,0.14)] bg-white/72 text-cocoa/84">
                   {items.length}{" "}
-                  {items.length === 1 ? "item disponivel" : "itens disponiveis"}
+                  {items.length === 1 ? "item disponível" : "itens disponíveis"}
                 </p>
               </div>
               <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
@@ -226,7 +226,7 @@ export default function MenuExplorer({ products }: { products: Product[] }) {
 
           <section className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-[1.4rem] border border-[rgba(124,20,46,0.12)] bg-white/74 p-4">
-              <p className="section-kicker text-cocoa/72">Atualizacao</p>
+              <p className="section-kicker text-cocoa/72">Atualização</p>
               <p className="mt-2 text-sm leading-7 text-espresso/74">
                 Sincronizado com o painel administrativo.
               </p>

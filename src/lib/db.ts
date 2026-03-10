@@ -1,31 +1,46 @@
 import { Pool } from "pg";
 import { LOJA_INFO } from "@/src/data/loja";
 import { PRODUTOS } from "@/src/data/produtos";
+import { createDefaultWeeklySchedule } from "@/src/lib/store-schedule";
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error("DATABASE_URL nao configurada. Defina em .env.local");
-}
+const connectionString = process.env.DATABASE_URL?.trim();
+export const isDatabaseConfigured = Boolean(connectionString);
 
 const globalForDb = globalThis as unknown as {
   pool?: Pool;
   initPromise?: Promise<void>;
 };
 
-export const pool =
-  globalForDb.pool ??
-  new Pool({
-    connectionString,
-    ssl: { rejectUnauthorized: false },
-    max: 10,
-  });
+function createMissingDatabasePool() {
+  const message = "DATABASE_URL nao configurada. Defina em .env.local";
 
-if (process.env.NODE_ENV !== "production") {
+  return {
+    query: async () => {
+      throw new Error(message);
+    },
+    connect: async () => {
+      throw new Error(message);
+    },
+  } as unknown as Pool;
+}
+
+export const pool =
+  isDatabaseConfigured && connectionString
+    ? (globalForDb.pool ??
+      new Pool({
+        connectionString,
+        ssl: { rejectUnauthorized: false },
+        max: 10,
+      }))
+    : createMissingDatabasePool();
+
+if (process.env.NODE_ENV !== "production" && isDatabaseConfigured) {
   globalForDb.pool = pool;
 }
 
 async function seedInitialData() {
+  const defaultWeeklySchedule = createDefaultWeeklySchedule("08:00", "19:00");
+
   const productsCountResult = await pool.query<{ count: string }>(
     "SELECT COUNT(*)::text AS count FROM products",
   );
@@ -35,9 +50,9 @@ async function seedInitialData() {
     for (const product of PRODUTOS) {
       await pool.query(
         `INSERT INTO products
-          (id, nome, categoria, subcategoria, descricao_curta, preco_cents, imagem, disponivel, destaque)
+          (id, nome, categoria, subcategoria, descricao_curta, preco_cents, imagem, disponivel, destaque, variacoes_json)
          VALUES
-          ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [
           product.id,
           product.nome,
@@ -48,15 +63,17 @@ async function seedInitialData() {
           product.imagem,
           product.disponivel,
           Boolean(product.destaque),
+          JSON.stringify(product.variacoes ?? []),
         ],
       );
     }
   }
 
   await pool.query(
-    `INSERT INTO store_settings (id, service_days, opening_time, closing_time, is_closed, closure_reason, closure_start_date, closure_end_date)
-     VALUES (1, 'Terca a quinta', '08:00', '19:00', false, NULL, NULL, NULL)
+    `INSERT INTO store_settings (id, service_days, opening_time, closing_time, weekly_schedule_json, is_closed, closure_reason, closure_start_date, closure_end_date)
+     VALUES (1, 'Segunda, Terca, Quarta, Quinta, Sexta, Sabado', '08:00', '19:00', $1::jsonb, false, NULL, NULL, NULL)
      ON CONFLICT (id) DO NOTHING`,
+    [JSON.stringify(defaultWeeklySchedule)],
   );
 
   await pool.query(
@@ -84,19 +101,39 @@ async function ensureDatabaseMigrations() {
     ALTER TABLE store_settings
     ADD COLUMN IF NOT EXISTS closure_end_date DATE;
 
+    ALTER TABLE store_settings
+    ADD COLUMN IF NOT EXISTS weekly_schedule_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+
     UPDATE store_settings
     SET service_days = 'Terca a quinta'
     WHERE service_days IS NULL OR BTRIM(service_days) = '';
+
+    UPDATE store_settings
+    SET weekly_schedule_json = '[]'::jsonb
+    WHERE weekly_schedule_json IS NULL;
 
     ALTER TABLE store_settings
     ALTER COLUMN service_days SET DEFAULT 'Terca a quinta';
 
     ALTER TABLE store_settings
     ALTER COLUMN service_days SET NOT NULL;
+
+    ALTER TABLE products
+    ADD COLUMN IF NOT EXISTS variacoes_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+
+    ALTER TABLE order_items
+    ADD COLUMN IF NOT EXISTS variation_id TEXT;
+
+    ALTER TABLE order_items
+    ADD COLUMN IF NOT EXISTS variation_name TEXT;
   `);
 }
 
 export async function initializeDatabase() {
+  if (!isDatabaseConfigured) {
+    return;
+  }
+
   if (!globalForDb.initPromise) {
     globalForDb.initPromise = (async () => {
       await pool.query(`
@@ -110,6 +147,7 @@ export async function initializeDatabase() {
           imagem TEXT NOT NULL,
           disponivel BOOLEAN NOT NULL DEFAULT true,
           destaque BOOLEAN NOT NULL DEFAULT false,
+          variacoes_json JSONB NOT NULL DEFAULT '[]'::jsonb,
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
@@ -129,6 +167,7 @@ export async function initializeDatabase() {
           service_days TEXT NOT NULL DEFAULT 'Terca a quinta',
           opening_time TEXT NOT NULL,
           closing_time TEXT NOT NULL,
+          weekly_schedule_json JSONB NOT NULL DEFAULT '[]'::jsonb,
           is_closed BOOLEAN NOT NULL DEFAULT false,
           closure_reason TEXT,
           closure_start_date DATE,
@@ -154,6 +193,8 @@ export async function initializeDatabase() {
           order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
           product_id TEXT NOT NULL,
           product_name TEXT NOT NULL,
+          variation_id TEXT,
+          variation_name TEXT,
           quantity INTEGER NOT NULL CHECK (quantity > 0),
           unit_price_cents INTEGER NOT NULL,
           subtotal_cents INTEGER NOT NULL
@@ -169,11 +210,18 @@ export async function initializeDatabase() {
         if (match) {
           const openingTime = `${match[1].padStart(2, "0")}:00`;
           const closingTime = `${match[2].padStart(2, "0")}:00`;
+          const weeklySchedule = createDefaultWeeklySchedule(
+            openingTime,
+            closingTime,
+          );
           await pool.query(
             `UPDATE store_settings
-             SET opening_time = $1, closing_time = $2, updated_at = NOW()
+             SET opening_time = $1,
+                 closing_time = $2,
+                 weekly_schedule_json = $3::jsonb,
+                 updated_at = NOW()
              WHERE id = 1`,
-            [openingTime, closingTime],
+            [openingTime, closingTime, JSON.stringify(weeklySchedule)],
           );
         }
       }

@@ -18,11 +18,11 @@ const bodyFont = Manrope({
 
 export const metadata: Metadata = {
   title: {
-    default: "Explosao de sabor",
-    template: "%s | Explosao de sabor",
+    default: "Explosão de Sabor",
+    template: "%s | Explosão de Sabor",
   },
   description:
-    "Explosao de sabor: bolos salgados e doces com pedido simples, acessivel e confirmado pelo WhatsApp.",
+    "Explosão de Sabor: bolos salgados e doces com pedido simples, acessível e confirmado pelo WhatsApp.",
 };
 
 export default function RootLayout({

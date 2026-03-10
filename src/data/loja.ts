@@ -1,11 +1,11 @@
 export const LOJA_INFO = {
-  nome: "Explosao de sabor",
+  nome: "Explosão de Sabor",
   assinatura: "Combos especiais, salgados e sobremesas",
-  slogan: "Pedido rapido, visual marcante e sabor que chama atencao.",
-  // TODO: Trocar horario pelos dados reais da loja.
-  endereco: "Rua Vinte, n 372 - Jaguaribe - Paulista. Proximo a Praca.",
-  horario: "TODO: Segunda a Sabado, das 8h as 19h",
+  slogan: "Pedido rápido, visual marcante e sabor que chama atenção.",
+  // TODO: Trocar horário pelos dados reais da loja.
+  endereco: "Rua Vinte, nº 372 - Jaguaribe - Paulista. Próximo à Praça.",
+  horario: "TODO: Segunda a Sábado, das 8h às 19h",
   telefone: "(81) 99456-3742",
   retirada: "Retirada no local e entrega sob consulta",
-  observacaoKit: "Observacao para kits: entre em contato para agendar.",
+  observacaoKit: "Observação para kits: entre em contato para agendar.",
 };

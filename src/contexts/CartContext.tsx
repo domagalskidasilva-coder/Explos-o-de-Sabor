@@ -19,9 +19,19 @@ interface CartState {
 
 type CartAction =
   | { type: "HYDRATE"; lines: CartLine[] }
-  | { type: "ADD"; productId: string; quantity?: number }
-  | { type: "SET_QTY"; productId: string; quantity: number }
-  | { type: "REMOVE"; productId: string }
+  | {
+      type: "ADD";
+      productId: string;
+      variationId?: string | null;
+      quantity?: number;
+    }
+  | {
+      type: "SET_QTY";
+      productId: string;
+      variationId?: string | null;
+      quantity: number;
+    }
+  | { type: "REMOVE"; productId: string; variationId?: string | null }
   | { type: "CLEAR" }
   | { type: "OPEN_CART" }
   | { type: "CLOSE_CART" }
@@ -29,9 +39,17 @@ type CartAction =
   | { type: "CLOSE_CHECKOUT" };
 
 interface CartContextValue extends CartState {
-  add: (productId: string, quantity?: number) => void;
-  setQty: (productId: string, quantity: number) => void;
-  remove: (productId: string) => void;
+  add: (
+    productId: string,
+    variationId?: string | null,
+    quantity?: number,
+  ) => void;
+  setQty: (
+    productId: string,
+    variationId: string | null | undefined,
+    quantity: number,
+  ) => void;
+  remove: (productId: string, variationId?: string | null) => void;
   clear: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -52,7 +70,10 @@ function sanitizeLines(value: unknown): CartLine[] {
     return [];
   }
 
-  const quantities = new Map<string, number>();
+  const quantities = new Map<
+    string,
+    { productId: string; variationId: string | null; quantity: number }
+  >();
 
   value.forEach((line) => {
     if (
@@ -72,10 +93,38 @@ function sanitizeLines(value: unknown): CartLine[] {
       return;
     }
 
-    quantities.set(line.productId, (quantities.get(line.productId) ?? 0) + nextQuantity);
+    const variationId =
+      "variationId" in line && typeof line.variationId === "string"
+        ? line.variationId
+        : null;
+    const lineKey = `${line.productId}:${variationId ?? "padrao"}`;
+    const current = quantities.get(lineKey);
+
+    quantities.set(lineKey, {
+      productId: line.productId,
+      variationId,
+      quantity: (current?.quantity ?? 0) + nextQuantity,
+    });
   });
 
-  return Array.from(quantities.entries()).map(([productId, quantity]) => ({ productId, quantity }));
+  return Array.from(quantities.values()).map(
+    ({ productId, variationId, quantity }) => ({
+      productId,
+      variationId,
+      quantity,
+    }),
+  );
+}
+
+function matchesLine(
+  line: CartLine,
+  productId: string,
+  variationId?: string | null,
+) {
+  return (
+    line.productId === productId &&
+    (line.variationId ?? null) === (variationId ?? null)
+  );
 }
 
 function reducer(state: CartState, action: CartAction): CartState {
@@ -84,13 +133,15 @@ function reducer(state: CartState, action: CartAction): CartState {
       return { ...state, lines: sanitizeLines(action.lines) };
     case "ADD": {
       const quantity = Math.max(1, Math.floor(action.quantity ?? 1));
-      const existingLine = state.lines.find((line) => line.productId === action.productId);
+      const existingLine = state.lines.find((line) =>
+        matchesLine(line, action.productId, action.variationId),
+      );
 
       if (existingLine) {
         return {
           ...state,
           lines: state.lines.map((line) =>
-            line.productId === action.productId
+            matchesLine(line, action.productId, action.variationId)
               ? { ...line, quantity: line.quantity + quantity }
               : line,
           ),
@@ -99,7 +150,14 @@ function reducer(state: CartState, action: CartAction): CartState {
 
       return {
         ...state,
-        lines: [...state.lines, { productId: action.productId, quantity }],
+        lines: [
+          ...state.lines,
+          {
+            productId: action.productId,
+            variationId: action.variationId ?? null,
+            quantity,
+          },
+        ],
       };
     }
     case "SET_QTY": {
@@ -108,9 +166,12 @@ function reducer(state: CartState, action: CartAction): CartState {
         ...state,
         lines:
           nextQuantity === 0
-            ? state.lines.filter((line) => line.productId !== action.productId)
+            ? state.lines.filter(
+                (line) =>
+                  !matchesLine(line, action.productId, action.variationId),
+              )
             : state.lines.map((line) =>
-                line.productId === action.productId
+                matchesLine(line, action.productId, action.variationId)
                   ? { ...line, quantity: nextQuantity }
                   : line,
               ),
@@ -119,7 +180,9 @@ function reducer(state: CartState, action: CartAction): CartState {
     case "REMOVE":
       return {
         ...state,
-        lines: state.lines.filter((line) => line.productId !== action.productId),
+        lines: state.lines.filter(
+          (line) => !matchesLine(line, action.productId, action.variationId),
+        ),
       };
     case "CLEAR":
       return { ...state, lines: [] };
@@ -170,15 +233,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ lines: state.lines }));
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ lines: state.lines }),
+    );
   }, [state.lines, storageReady]);
 
   const value = useMemo<CartContextValue>(
     () => ({
       ...state,
-      add: (productId, quantity) => dispatch({ type: "ADD", productId, quantity }),
-      setQty: (productId, quantity) => dispatch({ type: "SET_QTY", productId, quantity }),
-      remove: (productId) => dispatch({ type: "REMOVE", productId }),
+      add: (productId, variationId, quantity) =>
+        dispatch({ type: "ADD", productId, variationId, quantity }),
+      setQty: (productId, variationId, quantity) =>
+        dispatch({ type: "SET_QTY", productId, variationId, quantity }),
+      remove: (productId, variationId) =>
+        dispatch({ type: "REMOVE", productId, variationId }),
       clear: () => dispatch({ type: "CLEAR" }),
       openCart: () => dispatch({ type: "OPEN_CART" }),
       closeCart: () => dispatch({ type: "CLOSE_CART" }),

@@ -109,7 +109,7 @@ export default function CheckoutModal() {
     }
 
     if (!formData.endereco.trim()) {
-      nextErrors.endereco = "Informe seu endereco.";
+      nextErrors.endereco = "Informe seu endereço.";
     }
 
     if (!formData.pagamento) {
@@ -221,8 +221,8 @@ export default function CheckoutModal() {
                     Finalize em poucos campos.
                   </h2>
                   <p className="mt-2 text-sm leading-7 text-sugar/76">
-                    Credito, debito e dinheiro sao pagos na retirada. Pix e o
-                    unico antecipado.
+                    Crédito, débito e dinheiro são pagos na retirada. Pix é o
+                    único antecipado.
                   </p>
                 </div>
                 <button
@@ -276,7 +276,7 @@ export default function CheckoutModal() {
                     htmlFor="checkout-endereco"
                     className="block text-sm font-bold uppercase tracking-[0.08em] text-cocoa"
                   >
-                    Endereco
+                    Endereço
                   </label>
                   <input
                     id="checkout-endereco"
@@ -298,7 +298,7 @@ export default function CheckoutModal() {
                     id="checkout-endereco-ajuda"
                     className="mt-2 text-sm leading-7 text-espresso/70"
                   >
-                    O endereco aparece apenas na mensagem do pedido para
+                    O endereço aparece apenas na mensagem do pedido para
                     facilitar o contato com a loja.
                   </p>
                   {errors.endereco ? (
@@ -376,7 +376,7 @@ export default function CheckoutModal() {
                     placeholder="Ex.: BEMVINDO10"
                   />
                   <p className="mt-2 text-sm leading-7 text-espresso/70">
-                    O desconto e validado no envio do pedido.
+                    O desconto é validado no envio do pedido.
                   </p>
                 </div>
 
@@ -396,11 +396,12 @@ export default function CheckoutModal() {
                   <ul className="mt-4 space-y-3 text-sm leading-7 text-espresso/80">
                     {items.map((item) => (
                       <li
-                        key={item.productId}
+                        key={item.lineId}
                         className="flex items-start justify-between gap-4"
                       >
                         <span>
                           {item.quantity}x {item.product.nome}
+                          {item.variationName ? ` - ${item.variationName}` : ""}
                         </span>
                         <span className="whitespace-nowrap font-bold text-espresso">
                           {formatCurrencyFromCents(item.subtotalCents)}
@@ -427,7 +428,7 @@ export default function CheckoutModal() {
                   {isSubmitting ? "Enviando..." : "Enviar pedido no WhatsApp"}
                 </button>
                 <p className="text-sm leading-7 text-espresso/70">
-                  O site abre uma nova aba com a mensagem pronta para voce
+                  O site abre uma nova aba com a mensagem pronta para você
                   revisar e confirmar.
                 </p>
               </form>

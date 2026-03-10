@@ -5,7 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatCurrency, formatCurrencyFromCents } from "@/src/lib/format";
-import type { Product } from "@/src/types/product";
+import {
+  formatWeeklyScheduleLines,
+  formatWeeklyScheduleSummary,
+  type WeeklyScheduleDay,
+} from "@/src/lib/store-schedule";
+import type { Product, ProductVariation } from "@/src/types/product";
 
 type DiscountType = "percent" | "fixed";
 type AdminSection = "visao-geral" | "produtos" | "cupons" | "loja";
@@ -31,6 +36,7 @@ interface StoreSettings {
   serviceDays: string;
   openingTime: string;
   closingTime: string;
+  weeklySchedule: WeeklyScheduleDay[];
   isClosed: boolean;
   closureReason: string | null;
   closureStartDate: string | null;
@@ -48,6 +54,7 @@ const emptyProduct: Omit<Product, "id"> = {
   imagem: "/images/produtos/kit-churros-coxinhas.png",
   disponivel: true,
   destaque: false,
+  variacoes: [],
 };
 
 const emptyCoupon = {
@@ -57,6 +64,25 @@ const emptyCoupon = {
   active: true,
 };
 
+function updateWeeklyScheduleDay(
+  schedule: WeeklyScheduleDay[],
+  key: WeeklyScheduleDay["key"],
+  updates: Partial<WeeklyScheduleDay>,
+) {
+  const nextSchedule = schedule.map((day) =>
+    day.key === key ? { ...day, ...updates } : day,
+  );
+
+  const firstOpenDay = nextSchedule.find((day) => day.open) ?? nextSchedule[0]!;
+
+  return {
+    weeklySchedule: nextSchedule,
+    serviceDays: formatWeeklyScheduleSummary(nextSchedule),
+    openingTime: firstOpenDay.openingTime,
+    closingTime: firstOpenDay.closingTime,
+  };
+}
+
 const sections: Array<{
   id: AdminSection;
   label: string;
@@ -64,7 +90,7 @@ const sections: Array<{
 }> = [
   {
     id: "visao-geral",
-    label: "Visao geral",
+    label: "Visão geral",
     description: "Lucro, pedidos e resumo operacional.",
   },
   {
@@ -80,7 +106,7 @@ const sections: Array<{
   {
     id: "loja",
     label: "Loja",
-    description: "Dias, horario e fechamento da operacao.",
+    description: "Dias, horário e fechamento da operação.",
   },
 ];
 
@@ -130,6 +156,14 @@ function parseBrazilianDecimalValue(value: string) {
   }
 
   return numericValue;
+}
+
+function createEmptyVariation(index: number): ProductVariation {
+  return {
+    id: `var-${index + 1}`,
+    nome: "",
+    preco: 0,
+  };
 }
 
 export default function AdminDashboard() {
@@ -210,7 +244,7 @@ export default function AdminDashboard() {
       }
       if (!settingsRes.ok) {
         throw new Error(
-          settingsPayload.error ?? "Falha ao carregar configuracoes.",
+          settingsPayload.error ?? "Falha ao carregar configurações.",
         );
       }
 
@@ -250,6 +284,52 @@ export default function AdminDashboard() {
     setProductForm((current) => ({
       ...current,
       preco: parseBrazilianDecimalValue(sanitized),
+    }));
+  }
+
+  function addProductVariation() {
+    setProductForm((current) => ({
+      ...current,
+      variacoes: [
+        ...(current.variacoes ?? []),
+        createEmptyVariation((current.variacoes ?? []).length),
+      ],
+    }));
+  }
+
+  function updateProductVariation(
+    index: number,
+    field: keyof ProductVariation,
+    value: string,
+  ) {
+    setProductForm((current) => ({
+      ...current,
+      variacoes: (current.variacoes ?? []).map((variation, variationIndex) => {
+        if (variationIndex !== index) {
+          return variation;
+        }
+
+        if (field === "preco") {
+          return {
+            ...variation,
+            preco: parseBrazilianDecimalValue(value),
+          };
+        }
+
+        return {
+          ...variation,
+          [field]: value,
+        };
+      }),
+    }));
+  }
+
+  function removeProductVariation(index: number) {
+    setProductForm((current) => ({
+      ...current,
+      variacoes: (current.variacoes ?? []).filter(
+        (_, variationIndex) => variationIndex !== index,
+      ),
     }));
   }
 
@@ -346,7 +426,7 @@ export default function AdminDashboard() {
         throw new Error(payload.error ?? "Falha ao excluir produto.");
       }
 
-      setMessage("Produto excluido.");
+      setMessage("Produto excluído.");
       if (editingProductId === id) {
         resetProductForm();
       }
@@ -417,7 +497,7 @@ export default function AdminDashboard() {
         throw new Error(payload.error ?? "Falha ao excluir cupom.");
       }
 
-      setMessage("Cupom excluido.");
+      setMessage("Cupom excluído.");
       if (editingCouponId === id) {
         resetCouponForm();
       }
@@ -456,7 +536,7 @@ export default function AdminDashboard() {
         throw new Error(payload.error ?? "Falha ao salvar atendimento.");
       }
 
-      setMessage("Configuracoes de atendimento salvas.");
+      setMessage("Configurações de atendimento salvas.");
       await loadAll();
     } catch (saveError) {
       setError(
@@ -480,10 +560,10 @@ export default function AdminDashboard() {
       <section className="space-y-6">
         <div className="panel p-5 sm:p-6">
           <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-cocoa/82">
-            Visao geral
+            Visão geral
           </p>
           <h2 className="mt-2 text-3xl text-espresso">
-            Resumo rapido da operacao
+            Resumo rápido da operação
           </h2>
           <p className="mt-2 text-sm leading-7 text-espresso/76">
             Lucro, pedidos e volume de itens ativos em uma leitura curta.
@@ -509,7 +589,7 @@ export default function AdminDashboard() {
           </article>
           <article className="panel p-4">
             <p className="text-xs font-bold uppercase tracking-[0.1em] text-cocoa/80">
-              Ticket medio
+              Ticket médio
             </p>
             <p className="mt-2 text-3xl font-extrabold text-espresso">
               {formatCurrencyFromCents(metrics?.avgTicketCents ?? 0)}
@@ -528,7 +608,7 @@ export default function AdminDashboard() {
         <div className="grid gap-4 lg:grid-cols-2">
           <article className="panel p-5">
             <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-cocoa/82">
-              Catalogo
+              Catálogo
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-caramel/20 bg-white/70 p-4">
@@ -560,12 +640,16 @@ export default function AdminDashboard() {
                   Atendimento
                 </p>
                 <p className="mt-2 text-xl font-extrabold text-espresso">
-                  {settings?.serviceDays ?? "Nao configurado"}
+                  {settings?.serviceDays ?? "Não configurado"}
                 </p>
                 {settings ? (
-                  <p className="mt-2 text-sm leading-6 text-espresso/72">
-                    {settings.openingTime} as {settings.closingTime}
-                  </p>
+                  <div className="mt-2 space-y-1 text-sm leading-6 text-espresso/72">
+                    {formatWeeklyScheduleLines(settings.weeklySchedule).map(
+                      (line) => (
+                        <p key={line}>{line}</p>
+                      ),
+                    )}
+                  </div>
                 ) : null}
               </div>
               <div className="rounded-2xl border border-caramel/20 bg-white/70 p-4">
@@ -584,7 +668,7 @@ export default function AdminDashboard() {
                 ) : null}
                 {settings?.closureStartDate && settings?.closureEndDate ? (
                   <p className="mt-2 text-sm leading-6 text-espresso/72">
-                    Programado de {settings.closureStartDate} ate{" "}
+                    Programado de {settings.closureStartDate} até{" "}
                     {settings.closureEndDate}
                   </p>
                 ) : null}
@@ -606,7 +690,7 @@ export default function AdminDashboard() {
                 Produtos
               </p>
               <h2 className="mt-2 text-3xl text-espresso">
-                Cardapio conectado ao site
+                Cardápio conectado ao site
               </h2>
             </div>
             <button
@@ -659,7 +743,7 @@ export default function AdminDashboard() {
             />
             <input
               className="w-full rounded-xl border border-caramel/25 bg-sugar px-3 py-2"
-              placeholder="Descricao curta"
+              placeholder="Descrição curta"
               value={productForm.descricaoCurta}
               onChange={(event) =>
                 setProductForm((current) => ({
@@ -694,7 +778,8 @@ export default function AdminDashboard() {
                 />
                 <p className="text-xs leading-5 text-espresso/72">
                   Digite no formato brasileiro. Ex.: `40,00`. Preview:{" "}
-                  <strong>{formatCurrency(productForm.preco)}</strong>.
+                  <strong>{formatCurrency(productForm.preco)}</strong>. Se o
+                  produto tiver variações, esse valor fica como preço base.
                 </p>
               </label>
               <div className="grid gap-2">
@@ -729,10 +814,79 @@ export default function AdminDashboard() {
                   }
                 />
                 <p className="text-xs leading-5 text-espresso/72">
-                  Upload aceita JPG, PNG e WEBP ate 5 MB. Se quiser, ainda pode
+                  Upload aceita JPG, PNG e WEBP até 5 MB. Se quiser, ainda pode
                   colar a URL manualmente.
                 </p>
               </div>
+            </div>
+            <div className="rounded-[1.4rem] border border-caramel/18 bg-white/66 p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-extrabold uppercase tracking-[0.08em] text-cocoa/80">
+                    Variações do produto
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-espresso/72">
+                    Use para cadastrar sabores, tamanhos ou opções com nomes e
+                    valores diferentes no mesmo produto.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addProductVariation}
+                  className="inline-flex min-h-10 items-center justify-center rounded-xl border border-caramel/25 bg-white/80 px-4 text-xs font-extrabold uppercase tracking-[0.08em] text-espresso"
+                >
+                  Adicionar opção
+                </button>
+              </div>
+
+              {productForm.variacoes?.length ? (
+                <div className="mt-4 space-y-3">
+                  {productForm.variacoes.map((variation, index) => (
+                    <div
+                      key={`${variation.id}-${index}`}
+                      className="grid gap-3 rounded-[1.1rem] border border-caramel/16 bg-sugar/88 p-3 sm:grid-cols-[minmax(0,1fr)_12rem_auto]"
+                    >
+                      <input
+                        className="rounded-xl border border-caramel/25 bg-white px-3 py-2"
+                        placeholder="Nome da opção"
+                        value={variation.nome}
+                        onChange={(event) =>
+                          updateProductVariation(
+                            index,
+                            "nome",
+                            event.target.value,
+                          )
+                        }
+                      />
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        className="rounded-xl border border-caramel/25 bg-white px-3 py-2"
+                        placeholder="Ex.: 7,50"
+                        value={formatBrazilianDecimalValue(variation.preco)}
+                        onChange={(event) =>
+                          updateProductVariation(
+                            index,
+                            "preco",
+                            event.target.value,
+                          )
+                        }
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeProductVariation(index)}
+                        className="inline-flex min-h-10 items-center justify-center rounded-xl border border-danger/25 bg-white px-3 text-xs font-extrabold uppercase tracking-[0.08em] text-danger"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 text-sm leading-6 text-espresso/70">
+                  Sem variações cadastradas. O site usará apenas o preço base.
+                </p>
+              )}
             </div>
             <div className="overflow-hidden rounded-[1.4rem] border border-caramel/18 bg-white/66 p-3">
               <p className="text-xs font-extrabold uppercase tracking-[0.08em] text-cocoa/80">
@@ -766,7 +920,7 @@ export default function AdminDashboard() {
                     }))
                   }
                 />
-                Disponivel
+                Disponível
               </label>
               <label className="inline-flex items-center gap-2 text-sm font-semibold text-espresso">
                 <input
@@ -788,7 +942,7 @@ export default function AdminDashboard() {
                 disabled={saving || uploadingImage}
                 className="inline-flex min-h-10 items-center justify-center rounded-xl bg-espresso px-4 text-xs font-extrabold uppercase tracking-[0.09em] text-sugar"
               >
-                {editingProductId ? "Salvar edicao" : "Criar produto"}
+                {editingProductId ? "Salvar edição" : "Criar produto"}
               </button>
               {editingProductId ? (
                 <button
@@ -812,9 +966,9 @@ export default function AdminDashboard() {
               <thead className="bg-white/70 text-xs uppercase tracking-[0.08em] text-cocoa/80">
                 <tr>
                   <th className="px-4 py-3">Produto</th>
-                  <th className="px-4 py-3">Preco</th>
+                  <th className="px-4 py-3">Preço</th>
                   <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Acoes</th>
+                  <th className="px-4 py-3">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -827,12 +981,24 @@ export default function AdminDashboard() {
                       <p className="text-xs text-espresso/70">
                         {product.subcategoria}
                       </p>
+                      {product.variacoes?.length ? (
+                        <p className="mt-1 text-xs text-espresso/70">
+                          {product.variacoes
+                            .map(
+                              (variation) =>
+                                `${variation.nome} (${formatCurrency(variation.preco)})`,
+                            )
+                            .join(" • ")}
+                        </p>
+                      ) : null}
                     </td>
                     <td className="px-4 py-3 font-semibold text-espresso">
-                      {formatCurrency(product.preco)}
+                      {product.variacoes?.length
+                        ? `${product.variacoes.length} opções`
+                        : formatCurrency(product.preco)}
                     </td>
                     <td className="px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] text-cocoa">
-                      {product.disponivel ? "Disponivel" : "Indisponivel"}
+                      {product.disponivel ? "Disponível" : "Indisponível"}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">
@@ -850,6 +1016,7 @@ export default function AdminDashboard() {
                               imagem: product.imagem,
                               disponivel: product.disponivel,
                               destaque: Boolean(product.destaque),
+                              variacoes: product.variacoes ?? [],
                             });
                             setProductPriceInput(
                               formatBrazilianDecimalValue(product.preco),
@@ -903,7 +1070,7 @@ export default function AdminDashboard() {
           <form onSubmit={submitCoupon} className="mt-4 space-y-3">
             <input
               className="w-full rounded-xl border border-caramel/25 bg-sugar px-3 py-2"
-              placeholder="Codigo"
+              placeholder="Código"
               value={couponForm.code}
               onChange={(event) =>
                 setCouponForm((current) => ({
@@ -1033,7 +1200,7 @@ export default function AdminDashboard() {
           </h2>
           <p className="mt-2 text-sm leading-7 text-espresso/76">
             Ajuste os dias, a abertura, o fechamento e bloqueie a loja quando
-            necessario.
+            necessário.
           </p>
         </div>
 
@@ -1041,62 +1208,98 @@ export default function AdminDashboard() {
           <form onSubmit={saveSettings} className="panel space-y-4 p-5 sm:p-6">
             <div>
               <label className="mb-1 block text-xs font-bold uppercase tracking-[0.08em] text-cocoa/82">
-                Dias de atendimento
+                Funcionamento por dia
               </label>
-              <input
-                type="text"
-                className="w-full rounded-xl border border-caramel/25 bg-sugar px-3 py-2"
-                placeholder="Ex.: Terca a quinta"
-                value={settings.serviceDays}
-                onChange={(event) =>
-                  setSettings((current) =>
-                    current
-                      ? { ...current, serviceDays: event.target.value }
-                      : current,
-                  )
-                }
-              />
               <p className="mt-2 text-xs leading-5 text-espresso/70">
-                Texto livre para ajustar quando a rotina da loja mudar. Ex.:
-                `Terca a quinta` ou `Segunda a sabado`.
+                Marque os dias em que a loja abre. Em cada dia ativo, defina o
+                horário de abertura e fechamento.
               </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-xs font-bold uppercase tracking-[0.08em] text-cocoa/82">
-                  Abertura
-                </label>
-                <input
-                  type="time"
-                  className="w-full rounded-xl border border-caramel/25 bg-sugar px-3 py-2"
-                  value={settings.openingTime}
-                  onChange={(event) =>
-                    setSettings((current) =>
-                      current
-                        ? { ...current, openingTime: event.target.value }
-                        : current,
-                    )
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-bold uppercase tracking-[0.08em] text-cocoa/82">
-                  Fechamento
-                </label>
-                <input
-                  type="time"
-                  className="w-full rounded-xl border border-caramel/25 bg-sugar px-3 py-2"
-                  value={settings.closingTime}
-                  onChange={(event) =>
-                    setSettings((current) =>
-                      current
-                        ? { ...current, closingTime: event.target.value }
-                        : current,
-                    )
-                  }
-                />
-              </div>
+            <div className="space-y-3 rounded-2xl border border-caramel/16 bg-white/60 p-4">
+              {settings.weeklySchedule.map((day) => (
+                <div
+                  key={day.key}
+                  className="grid gap-3 rounded-2xl border border-caramel/14 bg-sugar/72 p-3 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_minmax(0,0.8fr)] sm:items-center"
+                >
+                  <label className="inline-flex items-center gap-3 text-sm font-semibold text-espresso">
+                    <input
+                      type="checkbox"
+                      checked={day.open}
+                      onChange={(event) =>
+                        setSettings((current) =>
+                          current
+                            ? {
+                                ...current,
+                                ...updateWeeklyScheduleDay(
+                                  current.weeklySchedule,
+                                  day.key,
+                                  { open: event.target.checked },
+                                ),
+                              }
+                            : current,
+                        )
+                      }
+                    />
+                    {day.label}
+                  </label>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-[0.08em] text-cocoa/82">
+                      Abertura
+                    </label>
+                    <input
+                      type="time"
+                      disabled={!day.open}
+                      className="w-full rounded-xl border border-caramel/25 bg-sugar px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={day.openingTime}
+                      onChange={(event) =>
+                        setSettings((current) =>
+                          current
+                            ? {
+                                ...current,
+                                ...updateWeeklyScheduleDay(
+                                  current.weeklySchedule,
+                                  day.key,
+                                  { openingTime: event.target.value },
+                                ),
+                              }
+                            : current,
+                        )
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-[0.08em] text-cocoa/82">
+                      Fechamento
+                    </label>
+                    <input
+                      type="time"
+                      disabled={!day.open}
+                      className="w-full rounded-xl border border-caramel/25 bg-sugar px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={day.closingTime}
+                      onChange={(event) =>
+                        setSettings((current) =>
+                          current
+                            ? {
+                                ...current,
+                                ...updateWeeklyScheduleDay(
+                                  current.weeklySchedule,
+                                  day.key,
+                                  { closingTime: event.target.value },
+                                ),
+                              }
+                            : current,
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
+            <p className="text-xs leading-5 text-espresso/70">
+              Resumo automático: {settings.serviceDays}
+            </p>
             <div className="space-y-4 rounded-2xl border border-caramel/16 bg-white/60 p-4">
               <label className="inline-flex items-center gap-3 text-sm font-semibold text-espresso">
                 <input
@@ -1142,7 +1345,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-bold uppercase tracking-[0.08em] text-cocoa/82">
-                    Ate
+                    Até
                   </label>
                   <input
                     type="date"
@@ -1172,7 +1375,7 @@ export default function AdminDashboard() {
               <textarea
                 className="w-full rounded-xl border border-caramel/25 bg-sugar px-3 py-2"
                 rows={4}
-                placeholder="Motivo do fechamento ou observacao"
+                placeholder="Motivo do fechamento ou observação"
                 value={settings.closureReason ?? ""}
                 onChange={(event) =>
                   setSettings((current) =>
@@ -1233,9 +1436,9 @@ export default function AdminDashboard() {
           <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-cocoa/82">
             Painel admin
           </p>
-          <h1 className="mt-2 text-3xl text-espresso">Explosao de sabor</h1>
+          <h1 className="mt-2 text-3xl text-espresso">Explosão de Sabor</h1>
           <p className="mt-2 text-sm leading-7 text-espresso/76">
-            Area interna da empresa com navegacao separada por sessao.
+            Área interna da empresa com navegação separada por sessão.
           </p>
 
           <div className="mt-5 flex flex-col gap-2">

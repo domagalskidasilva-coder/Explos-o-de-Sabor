@@ -8,19 +8,17 @@ import BrandLockup from "@/src/components/BrandLockup";
 import { useCart } from "@/src/contexts/CartContext";
 import { LOJA_INFO } from "@/src/data/loja";
 import { getCartCount } from "@/src/lib/cart";
+import {
+  getCurrentWeekdayKey,
+  type WeeklyScheduleDay,
+} from "@/src/lib/store-schedule";
 import { getConfiguredStoreValue } from "@/src/lib/store-info";
-import { normalizeWhatsAppNumber } from "@/src/lib/whatsapp";
 
 const links = [
-  { href: "/", label: "Inicio" },
-  { href: "/cardapio", label: "Cardapio" },
+  { href: "/", label: "Início" },
+  { href: "/cardapio", label: "Cardápio" },
   { href: "/politica-de-privacidade", label: "Privacidade" },
 ];
-
-const whatsappNumber = normalizeWhatsAppNumber(
-  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "",
-);
-const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}` : null;
 
 export default function Header() {
   const pathname = usePathname();
@@ -44,12 +42,20 @@ export default function Header() {
             serviceDays: string;
             openingTime: string;
             closingTime: string;
+            weeklySchedule: WeeklyScheduleDay[];
             effectiveIsClosed: boolean;
           };
         };
         if (!cancelled && payload.settings) {
+          const todayLine =
+            payload.settings.weeklySchedule.find(
+              (day) => day.key === getCurrentWeekdayKey(),
+            ) ?? payload.settings.weeklySchedule[0];
+
           setAtendimento(
-            `${payload.settings.serviceDays} - ${payload.settings.openingTime} as ${payload.settings.closingTime}`,
+            todayLine?.open
+              ? `${todayLine.label}: ${todayLine.openingTime} as ${todayLine.closingTime}`
+              : `${todayLine?.label ?? "Hoje"}: fechado`,
           );
           setIsClosed(payload.settings.effectiveIsClosed);
         }
@@ -70,7 +76,7 @@ export default function Header() {
       <div className="bg-espresso px-4 py-2 text-center text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-biscuit lg:px-6">
         {isClosed
           ? "Loja fechada temporariamente"
-          : "Pedidos com confirmacao final no WhatsApp"}
+          : "Pedidos com confirmação final no WhatsApp"}
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-3 lg:px-6">
@@ -80,10 +86,10 @@ export default function Header() {
               Atendimento
             </p>
             <p className="mt-1 text-sm font-semibold text-espresso/80">
-              {atendimento ?? "Horario ainda nao configurado"}
+              {atendimento ?? "Horário ainda não configurado"}
             </p>
             <p className="text-sm font-semibold text-espresso/80">
-              {telefone ?? "Telefone ainda nao configurado"}
+              {telefone ?? "Telefone ainda não configurado"}
             </p>
           </div>
 
@@ -92,16 +98,6 @@ export default function Header() {
           </Link>
 
           <div className="flex items-center justify-start gap-2 lg:justify-end">
-            {whatsappLink ? (
-              <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-caramel/30 bg-white/80 px-4 text-xs font-extrabold uppercase tracking-[0.09em] text-espresso transition hover:bg-oat"
-              >
-                WhatsApp
-              </a>
-            ) : null}
             <motion.button
               type="button"
               whileHover={{ scale: 1.02 }}
@@ -141,7 +137,7 @@ export default function Header() {
         </div>
 
         <nav
-          aria-label="Navegacao principal"
+          aria-label="Navegação principal"
           className="mt-3 grid grid-cols-3 gap-2"
         >
           {links.map((link) => {

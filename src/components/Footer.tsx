@@ -23,7 +23,7 @@ export default function Footer() {
                 <BrandLockup compact showText={false} />
                 <div>
                   <p className="section-kicker text-biscuit/84">
-                    Explosao de sabor
+                    Explosão de Sabor
                   </p>
                   <h2 className="mt-2 text-4xl leading-tight text-sugar sm:text-5xl">
                     Delivery com imagem forte e pedido sem atrito.
@@ -31,8 +31,8 @@ export default function Footer() {
                 </div>
               </div>
               <p className="mt-5 max-w-2xl text-base leading-8 text-sugar/76">
-                Catalogo sincronizado com o painel interno, atendimento direto
-                da empresa e finalizacao em poucos passos.
+                Catálogo sincronizado com o painel interno, atendimento direto
+                da empresa e finalização em poucos passos.
               </p>
               {whatsappLink ? (
                 <a
@@ -53,13 +53,13 @@ export default function Footer() {
                   {LOJA_INFO.nome}
                 </p>
                 <p className="text-sm leading-7 text-sugar/74">
-                  {endereco ?? "Endereco ainda nao configurado."}
+                  {endereco ?? "Endereço ainda não configurado."}
                 </p>
               </div>
               <div>
                 <p className="section-kicker text-biscuit/82">Contato</p>
                 <p className="mt-3 text-sm leading-7 text-sugar/74">
-                  {telefone ?? "Telefone ainda nao configurado."}
+                  {telefone ?? "Telefone ainda não configurado."}
                 </p>
                 <p className="text-sm leading-7 text-sugar/74">
                   {LOJA_INFO.retirada}
@@ -69,10 +69,10 @@ export default function Footer() {
                 </p>
               </div>
               <div>
-                <p className="section-kicker text-biscuit/82">Navegacao</p>
+                <p className="section-kicker text-biscuit/82">Navegação</p>
                 <div className="mt-3 flex flex-col items-start gap-2 text-sm font-semibold text-sugar/76">
-                  <Link href="/">Inicio</Link>
-                  <Link href="/cardapio">Cardapio</Link>
+                  <Link href="/">Início</Link>
+                  <Link href="/cardapio">Cardápio</Link>
                   <Link href="/politica-de-privacidade">Privacidade</Link>
                 </div>
               </div>

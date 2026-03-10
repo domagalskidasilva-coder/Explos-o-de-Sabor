@@ -90,17 +90,17 @@ export default function CartDrawer() {
               {items.length === 0 ? (
                 <div className="rounded-[1.9rem] border border-dashed border-[rgba(124,20,46,0.2)] bg-white/72 p-6 text-center">
                   <h3 className="text-2xl text-espresso">
-                    Seu carrinho esta vazio.
+                    Seu carrinho está vazio.
                   </h3>
                   <p className="mt-3 text-sm leading-7 text-espresso/75">
-                    Escolha algum item no cardapio para abrir o checkout.
+                    Escolha algum item no cardápio para abrir o checkout.
                   </p>
                 </div>
               ) : (
                 <ul className="space-y-4">
                   {items.map((item) => (
                     <li
-                      key={item.productId}
+                      key={item.lineId}
                       className="rounded-[1.75rem] border border-[rgba(124,20,46,0.12)] bg-white/76 p-4 shadow-[0_12px_24px_rgba(63,11,28,0.06)]"
                     >
                       <div className="flex items-start justify-between gap-4">
@@ -108,13 +108,20 @@ export default function CartDrawer() {
                           <p className="text-xl text-espresso">
                             {item.product.nome}
                           </p>
+                          {item.variationName ? (
+                            <p className="mt-1 text-sm font-semibold text-cocoa/78">
+                              Opção: {item.variationName}
+                            </p>
+                          ) : null}
                           <p className="mt-2 text-sm leading-7 text-espresso/75">
                             {item.product.descricaoCurta}
                           </p>
                         </div>
                         <button
                           type="button"
-                          onClick={() => remove(item.productId)}
+                          onClick={() =>
+                            remove(item.productId, item.variationId)
+                          }
                           className="inline-flex min-h-11 items-center justify-center rounded-full border border-[rgba(124,20,46,0.14)] bg-sugar px-4 text-sm font-bold text-espresso transition hover:bg-oat"
                           aria-label={`Remover ${item.product.nome}`}
                         >
@@ -126,7 +133,11 @@ export default function CartDrawer() {
                           <button
                             type="button"
                             onClick={() =>
-                              setQty(item.productId, item.quantity - 1)
+                              setQty(
+                                item.productId,
+                                item.variationId,
+                                item.quantity - 1,
+                              )
                             }
                             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-cream text-xl text-espresso transition hover:bg-oat"
                             aria-label={`Diminuir quantidade de ${item.product.nome}`}
@@ -142,7 +153,11 @@ export default function CartDrawer() {
                           <button
                             type="button"
                             onClick={() =>
-                              setQty(item.productId, item.quantity + 1)
+                              setQty(
+                                item.productId,
+                                item.variationId,
+                                item.quantity + 1,
+                              )
                             }
                             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-cream text-xl text-espresso transition hover:bg-oat"
                             aria-label={`Aumentar quantidade de ${item.product.nome}`}
@@ -184,8 +199,8 @@ export default function CartDrawer() {
                   </button>
                 </div>
                 <p className="mt-3 text-sm leading-7 text-sugar/80">
-                  O checkout abre um formulario curto e depois envia o pedido
-                  para confirmacao no WhatsApp.
+                  O checkout abre um formulário curto e depois envia o pedido
+                  para confirmação no WhatsApp.
                 </p>
               </div>
             </div>

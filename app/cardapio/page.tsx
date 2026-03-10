@@ -3,14 +3,15 @@ import Link from "next/link";
 import MenuExplorer from "@/src/components/MenuExplorer";
 import { LOJA_INFO } from "@/src/data/loja";
 import { getStoreSettings, listProducts } from "@/src/lib/repositories";
+import { formatWeeklyScheduleLines } from "@/src/lib/store-schedule";
 import { getConfiguredStoreValue } from "@/src/lib/store-info";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Cardapio",
+  title: "Cardápio",
   description:
-    "Catalogo completo com combos, porcoes e pedidos diretos pelo WhatsApp.",
+    "Catálogo completo com combos, porções e pedidos diretos pelo WhatsApp.",
 };
 
 export default async function CardapioPage() {
@@ -20,7 +21,9 @@ export default async function CardapioPage() {
   const destaques = products.filter((product) => product.destaque).length;
   const subcategorias = new Set(products.map((product) => product.subcategoria))
     .size;
-  const horario = `${storeSettings.openingTime} as ${storeSettings.closingTime}`;
+  const atendimentoLinhas = formatWeeklyScheduleLines(
+    storeSettings.weeklySchedule,
+  );
   const telefone = getConfiguredStoreValue(LOJA_INFO.telefone);
 
   return (
@@ -30,13 +33,13 @@ export default async function CardapioPage() {
     >
       <section className="grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)] lg:items-start">
         <aside className="panel-dark h-fit px-5 py-6 text-sugar lg:sticky lg:top-32 lg:max-h-[calc(100vh-9rem)] lg:self-start lg:overflow-y-auto">
-          <p className="section-kicker text-biscuit/84">Cardapio oficial</p>
+          <p className="section-kicker text-biscuit/84">Cardápio oficial</p>
           <h1 className="mt-3 text-4xl leading-tight text-sugar">
             Monte seu pedido
           </h1>
           <p className="mt-4 text-sm leading-8 text-sugar/74">
-            Catalogo direto da loja, atualizado pelo painel administrativo e
-            pronto para pedido rapido.
+            Catálogo direto da loja, atualizado pelo painel administrativo e
+            pronto para pedido rápido.
           </p>
 
           <div className="mt-6 space-y-3">
@@ -65,9 +68,13 @@ export default async function CardapioPage() {
             <p className="mt-3 text-sm leading-7 text-sugar/74">
               {storeSettings.serviceDays}
             </p>
-            <p className="text-sm leading-7 text-sugar/74">{horario}</p>
+            <div className="text-sm leading-7 text-sugar/74">
+              {atendimentoLinhas.map((linha) => (
+                <p key={linha}>{linha}</p>
+              ))}
+            </div>
             <p className="text-sm leading-7 text-sugar/74">
-              {telefone ?? "Telefone ainda nao configurado."}
+              {telefone ?? "Telefone ainda não configurado."}
             </p>
             <p className="mt-2 text-sm leading-7 text-sugar/74">
               {LOJA_INFO.observacaoKit}
@@ -86,19 +93,19 @@ export default async function CardapioPage() {
             href="/"
             className="button-secondary mt-6 w-full border-white/10 bg-white/10 text-sugar hover:bg-white/16 hover:text-sugar"
           >
-            Voltar para inicio
+            Voltar para início
           </Link>
         </aside>
 
         <div className="space-y-6">
           <header className="panel p-6 sm:p-8">
-            <p className="section-kicker text-cocoa/82">Catalogo conectado</p>
+            <p className="section-kicker text-cocoa/82">Catálogo conectado</p>
             <h2 className="mt-3 max-w-4xl text-4xl leading-tight text-espresso sm:text-5xl">
-              Cardapio organizado para leitura, filtro e decisao rapida.
+              Cardápio organizado para leitura, filtro e decisão rápida.
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-8 text-espresso/76">
               Tudo o que aparece aqui vem do mesmo cadastro usado no painel
-              interno da empresa. O site exibe apenas o que esta ativo para
+              interno da empresa. O site exibe apenas o que está ativo para
               venda.
             </p>
           </header>

@@ -1,5 +1,11 @@
 export type ProductCategory = "doce" | "salgado" | "bebida";
 
+export interface ProductVariation {
+  id: string;
+  nome: string;
+  preco: number;
+}
+
 export interface Product {
   id: string;
   nome: string;
@@ -10,4 +16,5 @@ export interface Product {
   imagem: string;
   disponivel: boolean;
   destaque?: boolean;
+  variacoes?: ProductVariation[];
 }

@@ -56,12 +56,24 @@ export function useCartProducts(lines: CartLine[]) {
         return [];
       }
 
+      const variation = line.variationId
+        ? (product.variacoes?.find((item) => item.id === line.variationId) ??
+          null)
+        : null;
+      const unitPriceCents = Math.round(
+        (variation?.preco ?? product.preco) * 100,
+      );
+
       return [
         {
           productId: line.productId,
+          variationId: line.variationId ?? null,
+          lineId: `${line.productId}:${line.variationId ?? "padrao"}`,
           product,
+          variationName: variation?.nome ?? null,
+          unitPriceCents,
           quantity: line.quantity,
-          subtotalCents: Math.round(product.preco * 100) * line.quantity,
+          subtotalCents: unitPriceCents * line.quantity,
         } satisfies CartProductLine,
       ];
     });

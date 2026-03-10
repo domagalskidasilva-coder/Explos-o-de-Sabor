@@ -44,7 +44,7 @@ export function buildWhatsAppMessage({
   const itensTexto = items
     .map(
       (item) =>
-        `${item.quantity}x ${item.product.nome} - ${formatCurrencyFromCents(item.subtotalCents)}`,
+        `${item.quantity}x ${item.product.nome}${item.variationName ? ` (${item.variationName})` : ""} - ${formatCurrencyFromCents(item.subtotalCents)}`,
     )
     .join("\n");
 

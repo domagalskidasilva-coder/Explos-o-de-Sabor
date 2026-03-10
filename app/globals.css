@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+@source "./";
+@source "../src";
 
 @theme inline {
     --color-cream: oklch(0.968 0.012 25);

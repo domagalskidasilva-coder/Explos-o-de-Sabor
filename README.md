@@ -69,7 +69,10 @@ npm run lint
 npm run typecheck
 npm run build
 npm run start
+npm test
 ```
+
+`npm test` executa um smoke test completo: lint + typecheck + build.
 
 ## Onde customizar
 

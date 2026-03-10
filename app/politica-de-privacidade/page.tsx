@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Política de privacidade",
   description:
-    "Resumo simples sobre o uso dos dados informados no checkout da Explosao de sabor.",
+    "Resumo simples sobre o uso dos dados informados no checkout da Explosão de Sabor.",
 };
 
 export default function PrivacyPage() {

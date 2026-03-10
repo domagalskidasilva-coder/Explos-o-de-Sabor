@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requireAdminRequest } from "@/src/lib/admin-auth";
 import { deleteProduct, updateProduct } from "@/src/lib/repositories";
-import type { Product } from "@/src/types/product";
+import type { Product, ProductVariation } from "@/src/types/product";
 
 function parseProductInput(payload: Partial<Product>) {
   if (!payload.nome?.trim()) {
@@ -30,6 +30,29 @@ function parseProductInput(payload: Partial<Product>) {
     throw new Error("Preco invalido.");
   }
 
+  const variacoes = Array.isArray(payload.variacoes)
+    ? payload.variacoes.flatMap((variation, index) => {
+        if (!variation?.nome?.trim()) {
+          throw new Error(
+            `Nome da variacao ${index + 1} e obrigatorio quando informada.`,
+          );
+        }
+
+        const variationPrice = Number(variation.preco);
+        if (!Number.isFinite(variationPrice) || variationPrice < 0) {
+          throw new Error(`Preco da variacao ${index + 1} e invalido.`);
+        }
+
+        return [
+          {
+            id: variation.id?.trim() || `var-${index + 1}`,
+            nome: variation.nome.trim(),
+            preco: variationPrice,
+          } satisfies ProductVariation,
+        ];
+      })
+    : [];
+
   return {
     nome: payload.nome.trim(),
     categoria: payload.categoria,
@@ -39,6 +62,7 @@ function parseProductInput(payload: Partial<Product>) {
     imagem: payload.imagem.trim(),
     disponivel: Boolean(payload.disponivel),
     destaque: Boolean(payload.destaque),
+    variacoes,
   };
 }
 

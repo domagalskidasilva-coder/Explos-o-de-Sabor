@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { useCart } from "@/src/contexts/CartContext";
@@ -7,15 +8,38 @@ import { formatCurrency } from "@/src/lib/format";
 import type { Product } from "@/src/types/product";
 
 function getCategoryLabel(category: Product["categoria"]) {
-  return category === "doce" ? "Doce" : "Salgado";
+  if (category === "doce") {
+    return "Doce";
+  }
+
+  if (category === "bebida") {
+    return "Bebida";
+  }
+
+  return "Salgado";
 }
 
 export default function ProductCard({ product }: { product: Product }) {
   const { add, openCart } = useCart();
   const disabled = !product.disponivel;
+  const variations = product.variacoes ?? [];
+  const defaultVariationId = variations[0]?.id ?? null;
+  const [selectedVariationId, setSelectedVariationId] = useState<string | null>(
+    defaultVariationId,
+  );
+  const activeVariationId = variations.some(
+    (variation) => variation.id === selectedVariationId,
+  )
+    ? selectedVariationId
+    : defaultVariationId;
+
+  const selectedVariation = variations.find(
+    (variation) => variation.id === activeVariationId,
+  );
+  const resolvedPrice = selectedVariation?.preco ?? product.preco;
 
   function handleAddToCart() {
-    add(product.id, 1);
+    add(product.id, activeVariationId, 1);
     openCart();
   }
 
@@ -42,14 +66,14 @@ export default function ProductCard({ product }: { product: Product }) {
           <span>{product.subcategoria}</span>
         </div>
         <div className="absolute bottom-4 right-4 rounded-full border border-white/16 bg-[rgba(62,8,24,0.75)] px-3 py-2 text-sm font-extrabold text-biscuit backdrop-blur">
-          {formatCurrency(product.preco)}
+          {formatCurrency(resolvedPrice)}
         </div>
       </div>
 
       <div className="flex flex-1 flex-col p-5">
         <div className="space-y-5">
           <div className="space-y-2">
-            <p className="section-kicker text-cocoa/68">Selecao da casa</p>
+            <p className="section-kicker text-cocoa/68">Seleção da casa</p>
             <h3 className="text-[2rem] leading-tight text-espresso">
               {product.nome}
             </h3>
@@ -67,9 +91,33 @@ export default function ProductCard({ product }: { product: Product }) {
                 <p className="mt-2 text-sm leading-6 text-espresso/72">
                   Adicione ao carrinho e confirme tudo com a loja no WhatsApp.
                 </p>
+                {variations.length > 0 ? (
+                  <div className="mt-3">
+                    <label
+                      htmlFor={`product-variation-${product.id}`}
+                      className="section-kicker text-cocoa/70"
+                    >
+                      Escolha a opção
+                    </label>
+                    <select
+                      id={`product-variation-${product.id}`}
+                      value={activeVariationId ?? ""}
+                      onChange={(event) =>
+                        setSelectedVariationId(event.target.value || null)
+                      }
+                      className="mt-2 min-h-11 w-full rounded-xl border border-[rgba(124,20,46,0.12)] bg-sugar/92 px-3 py-2 text-sm font-semibold text-espresso outline-none transition focus:border-caramel"
+                    >
+                      {variations.map((variation) => (
+                        <option key={variation.id} value={variation.id}>
+                          {variation.nome} - {formatCurrency(variation.preco)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null}
               </div>
               <p className="hidden rounded-full border border-caramel/18 bg-oat/80 px-3 py-1 text-sm font-extrabold text-espresso sm:inline-flex">
-                {formatCurrency(product.preco)}
+                {formatCurrency(resolvedPrice)}
               </p>
             </div>
           </div>
@@ -80,7 +128,7 @@ export default function ProductCard({ product }: { product: Product }) {
               <p className="mt-2 text-sm leading-6 text-espresso/72">
                 {disabled
                   ? "Item pausado no momento."
-                  : "Liberado para pedido e confirmacao imediata."}
+                  : "Liberado para pedido e confirmação imediata."}
               </p>
             </div>
             <motion.button
@@ -91,7 +139,7 @@ export default function ProductCard({ product }: { product: Product }) {
               onClick={handleAddToCart}
               className="button-primary shrink-0 px-6 disabled:cursor-not-allowed disabled:brightness-75"
             >
-              {disabled ? "Indisponivel" : "Adicionar"}
+              {disabled ? "Indisponível" : "Adicionar"}
             </motion.button>
           </div>
         </div>

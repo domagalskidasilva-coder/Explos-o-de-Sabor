@@ -1,7 +1,17 @@
 import { randomUUID } from "node:crypto";
-import { initializeDatabase, pool } from "@/src/lib/db";
+import { LOJA_INFO } from "@/src/data/loja";
+import { PRODUTOS } from "@/src/data/produtos";
+import { initializeDatabase, isDatabaseConfigured, pool } from "@/src/lib/db";
+import {
+  createDefaultWeeklySchedule,
+  formatWeeklyScheduleSummary,
+  getCurrentWeekdayKey,
+  isDayScheduleOpenNow,
+  normalizeWeeklySchedule,
+  type WeeklyScheduleDay,
+} from "@/src/lib/store-schedule";
 import type { CartLine, PaymentMethod } from "@/src/types/cart";
-import type { Product } from "@/src/types/product";
+import type { Product, ProductVariation } from "@/src/types/product";
 
 export interface Coupon {
   id: number;
@@ -15,6 +25,7 @@ export interface StoreSettings {
   serviceDays: string;
   openingTime: string;
   closingTime: string;
+  weeklySchedule: WeeklyScheduleDay[];
   isClosed: boolean;
   closureReason: string | null;
   closureStartDate: string | null;
@@ -60,7 +71,37 @@ function mapProduct(row: {
   imagem: string;
   disponivel: boolean;
   destaque: boolean;
+  variacoes_json: unknown;
 }): Product {
+  const parsedVariations = Array.isArray(row.variacoes_json)
+    ? row.variacoes_json.flatMap((variation) => {
+        if (
+          !variation ||
+          typeof variation !== "object" ||
+          !("id" in variation) ||
+          !("nome" in variation) ||
+          !("preco" in variation) ||
+          typeof variation.id !== "string" ||
+          typeof variation.nome !== "string"
+        ) {
+          return [];
+        }
+
+        const price = Number(variation.preco);
+        if (!Number.isFinite(price) || price < 0) {
+          return [];
+        }
+
+        return [
+          {
+            id: variation.id,
+            nome: variation.nome,
+            preco: price,
+          } satisfies ProductVariation,
+        ];
+      })
+    : [];
+
   return {
     id: row.id,
     nome: row.nome,
@@ -71,10 +112,113 @@ function mapProduct(row: {
     imagem: row.imagem,
     disponivel: row.disponivel,
     destaque: row.destaque,
+    variacoes: parsedVariations,
   };
 }
 
+function getFallbackProducts(options?: { onlyAvailable?: boolean }) {
+  const products = options?.onlyAvailable
+    ? PRODUTOS.filter((product) => product.disponivel)
+    : PRODUTOS;
+
+  return [...products].sort((a, b) => {
+    if (a.categoria !== b.categoria) {
+      return a.categoria.localeCompare(b.categoria);
+    }
+
+    if (a.subcategoria !== b.subcategoria) {
+      return a.subcategoria.localeCompare(b.subcategoria);
+    }
+
+    return a.nome.localeCompare(b.nome);
+  });
+}
+
+function normalizeVariations(
+  variations: ProductVariation[] | undefined,
+): ProductVariation[] {
+  if (!Array.isArray(variations)) {
+    return [];
+  }
+
+  return variations.flatMap((variation, index) => {
+    const nome = variation.nome?.trim();
+    const preco = Number(variation.preco);
+
+    if (!nome || !Number.isFinite(preco) || preco < 0) {
+      return [];
+    }
+
+    return [
+      {
+        id: variation.id?.trim() || `var-${index + 1}`,
+        nome,
+        preco,
+      } satisfies ProductVariation,
+    ];
+  });
+}
+
+function getProductUnitPriceCents(
+  product: Product,
+  variationId?: string | null,
+) {
+  const variation = variationId
+    ? product.variacoes?.find((item) => item.id === variationId)
+    : null;
+
+  return {
+    variation: variation ?? null,
+    unitPriceCents: Math.round((variation?.preco ?? product.preco) * 100),
+  };
+}
+
+function parseFallbackHours() {
+  const horario = LOJA_INFO.horario?.trim() ?? "";
+  const match = horario.match(/(\d{1,2})h.*?(\d{1,2})h/i);
+
+  if (!match) {
+    return { openingTime: "08:00", closingTime: "19:00" };
+  }
+
+  return {
+    openingTime: `${match[1].padStart(2, "0")}:00`,
+    closingTime: `${match[2].padStart(2, "0")}:00`,
+  };
+}
+
+function getFallbackStoreSettings(): StoreSettings {
+  const hours = parseFallbackHours();
+  const weeklySchedule = createDefaultWeeklySchedule(
+    hours.openingTime,
+    hours.closingTime,
+  );
+
+  return {
+    serviceDays: formatWeeklyScheduleSummary(weeklySchedule),
+    openingTime: hours.openingTime,
+    closingTime: hours.closingTime,
+    weeklySchedule,
+    isClosed: false,
+    closureReason: null,
+    closureStartDate: null,
+    closureEndDate: null,
+    effectiveIsClosed: false,
+    scheduledClosureActive: false,
+  };
+}
+
+function assertDatabaseConfigured() {
+  if (!isDatabaseConfigured) {
+    throw new Error("DATABASE_URL nao configurada. Defina em .env.local");
+  }
+}
+
 export async function listProducts(options?: { onlyAvailable?: boolean }) {
+  if (!isDatabaseConfigured) {
+    return getFallbackProducts(options);
+  }
+
   await initializeDatabase();
 
   const conditions: string[] = [];
@@ -98,8 +242,9 @@ export async function listProducts(options?: { onlyAvailable?: boolean }) {
     imagem: string;
     disponivel: boolean;
     destaque: boolean;
+    variacoes_json: unknown;
   }>(
-    `SELECT id, nome, categoria, subcategoria, descricao_curta, preco_cents, imagem, disponivel, destaque
+    `SELECT id, nome, categoria, subcategoria, descricao_curta, preco_cents, imagem, disponivel, destaque, variacoes_json
      FROM products
      ${whereClause}
      ORDER BY categoria, subcategoria, nome`,
@@ -110,6 +255,15 @@ export async function listProducts(options?: { onlyAvailable?: boolean }) {
 }
 
 export async function listProductsByIds(ids: string[]) {
+  if (!isDatabaseConfigured) {
+    if (ids.length === 0) {
+      return [] as Product[];
+    }
+
+    const idsSet = new Set(ids);
+    return PRODUTOS.filter((product) => idsSet.has(product.id));
+  }
+
   await initializeDatabase();
 
   if (ids.length === 0) {
@@ -126,8 +280,9 @@ export async function listProductsByIds(ids: string[]) {
     imagem: string;
     disponivel: boolean;
     destaque: boolean;
+    variacoes_json: unknown;
   }>(
-    `SELECT id, nome, categoria, subcategoria, descricao_curta, preco_cents, imagem, disponivel, destaque
+    `SELECT id, nome, categoria, subcategoria, descricao_curta, preco_cents, imagem, disponivel, destaque, variacoes_json
      FROM products
      WHERE id = ANY($1::text[])`,
     [ids],
@@ -139,6 +294,7 @@ export async function listProductsByIds(ids: string[]) {
 export async function createProduct(
   input: Omit<Product, "id"> & { id?: string },
 ) {
+  assertDatabaseConfigured();
   await initializeDatabase();
 
   const id = input.id?.trim() || `prod-${randomUUID().slice(0, 8)}`;
@@ -153,12 +309,13 @@ export async function createProduct(
     imagem: string;
     disponivel: boolean;
     destaque: boolean;
+    variacoes_json: unknown;
   }>(
     `INSERT INTO products
-      (id, nome, categoria, subcategoria, descricao_curta, preco_cents, imagem, disponivel, destaque, updated_at)
+      (id, nome, categoria, subcategoria, descricao_curta, preco_cents, imagem, disponivel, destaque, variacoes_json, updated_at)
      VALUES
-      ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
-     RETURNING id, nome, categoria, subcategoria, descricao_curta, preco_cents, imagem, disponivel, destaque`,
+      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+     RETURNING id, nome, categoria, subcategoria, descricao_curta, preco_cents, imagem, disponivel, destaque, variacoes_json`,
     [
       id,
       input.nome,
@@ -169,6 +326,7 @@ export async function createProduct(
       input.imagem,
       input.disponivel,
       Boolean(input.destaque),
+      JSON.stringify(normalizeVariations(input.variacoes)),
     ],
   );
 
@@ -176,6 +334,7 @@ export async function createProduct(
 }
 
 export async function updateProduct(id: string, input: Omit<Product, "id">) {
+  assertDatabaseConfigured();
   await initializeDatabase();
 
   const result = await pool.query<{
@@ -188,6 +347,7 @@ export async function updateProduct(id: string, input: Omit<Product, "id">) {
     imagem: string;
     disponivel: boolean;
     destaque: boolean;
+    variacoes_json: unknown;
   }>(
     `UPDATE products
      SET nome = $2,
@@ -198,9 +358,10 @@ export async function updateProduct(id: string, input: Omit<Product, "id">) {
          imagem = $7,
          disponivel = $8,
          destaque = $9,
+         variacoes_json = $10,
          updated_at = NOW()
      WHERE id = $1
-     RETURNING id, nome, categoria, subcategoria, descricao_curta, preco_cents, imagem, disponivel, destaque`,
+     RETURNING id, nome, categoria, subcategoria, descricao_curta, preco_cents, imagem, disponivel, destaque, variacoes_json`,
     [
       id,
       input.nome,
@@ -211,6 +372,7 @@ export async function updateProduct(id: string, input: Omit<Product, "id">) {
       input.imagem,
       input.disponivel,
       Boolean(input.destaque),
+      JSON.stringify(normalizeVariations(input.variacoes)),
     ],
   );
 
@@ -222,11 +384,13 @@ export async function updateProduct(id: string, input: Omit<Product, "id">) {
 }
 
 export async function deleteProduct(id: string) {
+  assertDatabaseConfigured();
   await initializeDatabase();
   await pool.query("DELETE FROM products WHERE id = $1", [id]);
 }
 
 export async function listCoupons() {
+  assertDatabaseConfigured();
   await initializeDatabase();
 
   const result = await pool.query<{
@@ -259,6 +423,7 @@ export async function createCoupon(input: {
   discountValue: number;
   active?: boolean;
 }) {
+  assertDatabaseConfigured();
   await initializeDatabase();
 
   const result = await pool.query<{
@@ -298,6 +463,7 @@ export async function updateCoupon(
     active: boolean;
   },
 ) {
+  assertDatabaseConfigured();
   await initializeDatabase();
 
   const result = await pool.query<{
@@ -339,63 +505,85 @@ export async function updateCoupon(
 }
 
 export async function deleteCoupon(id: number) {
+  assertDatabaseConfigured();
   await initializeDatabase();
   await pool.query("DELETE FROM coupons WHERE id = $1", [id]);
 }
 
 export async function getStoreSettings() {
+  if (!isDatabaseConfigured) {
+    return getFallbackStoreSettings();
+  }
+
   await initializeDatabase();
 
   const result = await pool.query<{
     service_days: string;
     opening_time: string;
     closing_time: string;
+    weekly_schedule_json: unknown;
     is_closed: boolean;
     closure_reason: string | null;
     closure_start_date: string | null;
     closure_end_date: string | null;
   }>(
-    `SELECT service_days, opening_time, closing_time, is_closed, closure_reason, closure_start_date::text, closure_end_date::text
+    `SELECT service_days, opening_time, closing_time, weekly_schedule_json, is_closed, closure_reason, closure_start_date::text, closure_end_date::text
      FROM store_settings
      WHERE id = 1`,
   );
 
   const row = result.rows[0];
+  const weeklySchedule = normalizeWeeklySchedule(
+    row.weekly_schedule_json,
+    row.opening_time,
+    row.closing_time,
+  );
+  const currentDaySchedule = weeklySchedule.find(
+    (day) => day.key === getCurrentWeekdayKey(),
+  );
   const scheduledClosureActive = isScheduledClosureActive(
     row.closure_start_date,
     row.closure_end_date,
   );
+  const scheduleClosed = !isDayScheduleOpenNow(currentDaySchedule);
+  const serviceDays = formatWeeklyScheduleSummary(weeklySchedule);
+  const openingTime = currentDaySchedule?.openingTime ?? row.opening_time;
+  const closingTime = currentDaySchedule?.closingTime ?? row.closing_time;
 
   return {
-    serviceDays: row.service_days,
-    openingTime: row.opening_time,
-    closingTime: row.closing_time,
+    serviceDays,
+    openingTime,
+    closingTime,
+    weeklySchedule,
     isClosed: row.is_closed,
     closureReason: row.closure_reason,
     closureStartDate: row.closure_start_date,
     closureEndDate: row.closure_end_date,
-    effectiveIsClosed: row.is_closed || scheduledClosureActive,
+    effectiveIsClosed: row.is_closed || scheduledClosureActive || scheduleClosed,
     scheduledClosureActive,
   } satisfies StoreSettings;
 }
 
 export async function updateStoreSettings(input: StoreSettings) {
+  assertDatabaseConfigured();
   await initializeDatabase();
   await pool.query(
     `UPDATE store_settings
      SET service_days = $1,
          opening_time = $2,
          closing_time = $3,
-         is_closed = $4,
-         closure_reason = $5,
-         closure_start_date = $6,
-         closure_end_date = $7,
+         weekly_schedule_json = $4::jsonb,
+         is_closed = $5,
+         closure_reason = $6,
+         closure_start_date = $7,
+         closure_end_date = $8,
          updated_at = NOW()
      WHERE id = 1`,
     [
       input.serviceDays.trim(),
       input.openingTime,
       input.closingTime,
+      JSON.stringify(input.weeklySchedule),
       input.isClosed,
       input.closureReason?.trim() || null,
       input.closureStartDate || null,
@@ -405,6 +593,7 @@ export async function updateStoreSettings(input: StoreSettings) {
 }
 
 export async function getDashboardMetrics() {
+  assertDatabaseConfigured();
   await initializeDatabase();
 
   const [ordersResult, productsResult] = await Promise.all([
@@ -443,6 +632,10 @@ export async function getDashboardMetrics() {
 }
 
 export async function applyCoupon(code: string, subtotalCents: number) {
+  if (!isDatabaseConfigured) {
+    return { couponCode: null, discountCents: 0 };
+  }
+
   await initializeDatabase();
 
   if (!code.trim()) {
@@ -486,11 +679,10 @@ export async function createOrder(input: {
   lines: CartLine[];
   couponCode?: string;
 }) {
-  await initializeDatabase();
-
   const sanitizedLines = input.lines
     .map((line) => ({
       productId: line.productId,
+      variationId: line.variationId?.trim() || null,
       quantity: Math.max(0, Math.floor(line.quantity)),
     }))
     .filter((line) => line.quantity > 0);
@@ -512,13 +704,24 @@ export async function createOrder(input: {
       return [];
     }
 
+    if (
+      line.variationId &&
+      !product.variacoes?.some((variation) => variation.id === line.variationId)
+    ) {
+      return [];
+    }
+
+    const pricing = getProductUnitPriceCents(product, line.variationId);
+
     return [
       {
         productId: product.id,
-        productName: product.nome,
+        variationId: line.variationId,
         quantity: line.quantity,
-        unitPriceCents: Math.round(product.preco * 100),
-        subtotalCents: Math.round(product.preco * 100) * line.quantity,
+        ...pricing,
+        productName: product.nome,
+        variationName: pricing.variation?.nome ?? null,
+        subtotalCents: pricing.unitPriceCents * line.quantity,
         product,
       },
     ];
@@ -538,6 +741,27 @@ export async function createOrder(input: {
   );
   const totalCents = Math.max(0, subtotalCents - couponApplied.discountCents);
 
+  if (!isDatabaseConfigured) {
+    return {
+      orderId: Date.now(),
+      items: orderItems.map((item) => ({
+        productId: item.productId,
+        variationId: item.variationId,
+        lineId: `${item.productId}:${item.variationId ?? "padrao"}`,
+        product: item.product,
+        variationName: item.variationName,
+        unitPriceCents: item.unitPriceCents,
+        quantity: item.quantity,
+        subtotalCents: item.subtotalCents,
+      })),
+      subtotalCents,
+      discountCents: couponApplied.discountCents,
+      totalCents,
+      couponCode: couponApplied.couponCode,
+    };
+  }
+
+  await initializeDatabase();
   const client = await pool.connect();
 
   try {
@@ -565,13 +789,15 @@ export async function createOrder(input: {
     for (const item of orderItems) {
       await client.query(
         `INSERT INTO order_items
-          (order_id, product_id, product_name, quantity, unit_price_cents, subtotal_cents)
+          (order_id, product_id, product_name, variation_id, variation_name, quantity, unit_price_cents, subtotal_cents)
          VALUES
-          ($1, $2, $3, $4, $5, $6)`,
+          ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
           orderId,
           item.productId,
           item.productName,
+          item.variationId,
+          item.variationName,
           item.quantity,
           item.unitPriceCents,
           item.subtotalCents,
@@ -585,7 +811,11 @@ export async function createOrder(input: {
       orderId,
       items: orderItems.map((item) => ({
         productId: item.productId,
+        variationId: item.variationId,
+        lineId: `${item.productId}:${item.variationId ?? "padrao"}`,
         product: item.product,
+        variationName: item.variationName,
+        unitPriceCents: item.unitPriceCents,
         quantity: item.quantity,
         subtotalCents: item.subtotalCents,
       })),

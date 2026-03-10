@@ -7,6 +7,9 @@ export interface CartLine {
 
 export interface CheckoutFormData {
   nome: string;
+  telefone: string;
   endereco: string;
+  bairro: string;
+  complemento: string;
   pagamento: PaymentMethod;
 }

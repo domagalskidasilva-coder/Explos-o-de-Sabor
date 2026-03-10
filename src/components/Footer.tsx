@@ -12,78 +12,76 @@ const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}` : null;
 export default function Footer() {
   const telefone = getConfiguredStoreValue(LOJA_INFO.telefone);
   const endereco = getConfiguredStoreValue(LOJA_INFO.endereco);
-  const horario = getConfiguredStoreValue(LOJA_INFO.horario);
-  const contactDetails = [
-    telefone && `Tel.: ${telefone}`,
-    endereco,
-    horario,
-    LOJA_INFO.retirada,
-  ].filter(Boolean);
 
   return (
-    <footer className="border-t border-caramel/20 bg-espresso text-sugar">
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:px-6">
-        <div className="grid gap-6 md:grid-cols-3">
-          <div>
-            <BrandLockup compact showText={false} />
-            <h2 className="mt-3 text-3xl">{LOJA_INFO.nome}</h2>
-            <p className="mt-3 max-w-md text-sm leading-7 text-sugar/80">
-              {LOJA_INFO.assinatura}. Pedidos simples, fluxo acessivel e
-              confirmacao final pelo WhatsApp.
-            </p>
-          </div>
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.12em] text-biscuit">
-              Atendimento
-            </p>
-            <div className="mt-3 space-y-2 text-sm leading-7 text-sugar/80">
-              {contactDetails.map((detail) => (
-                <p key={detail}>{detail}</p>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.12em] text-biscuit">
-              Informacoes
-            </p>
-            <div className="mt-3 flex flex-col items-start gap-3 text-sm font-bold">
-              <Link
-                href="/cardapio"
-                className="underline decoration-biscuit/50"
-              >
-                Ver cardapio
-              </Link>
-              <Link
-                href="/politica-de-privacidade"
-                className="underline decoration-biscuit/50"
-              >
-                Politica de privacidade
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-start gap-3 lg:items-end">
-          {whatsappLink ? (
-            <>
-              <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-biscuit px-6 text-base font-bold text-espresso transition hover:bg-cream"
-              >
-                Falar no WhatsApp
-              </a>
-              <p className="text-sm text-sugar/70">
-                Pedidos confirmados em uma nova aba do WhatsApp.
+    <footer className="mt-20 px-4 pb-4 lg:px-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="panel-dark overflow-hidden px-6 py-8 text-sugar sm:px-8 sm:py-10">
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start">
+            <div>
+              <div className="flex items-center gap-4">
+                <BrandLockup compact showText={false} />
+                <div>
+                  <p className="section-kicker text-biscuit/84">
+                    Explosao de sabor
+                  </p>
+                  <h2 className="mt-2 text-4xl leading-tight text-sugar sm:text-5xl">
+                    Delivery com imagem forte e pedido sem atrito.
+                  </h2>
+                </div>
+              </div>
+              <p className="mt-5 max-w-2xl text-base leading-8 text-sugar/76">
+                Catalogo sincronizado com o painel interno, atendimento direto
+                da empresa e finalizacao em poucos passos.
               </p>
-            </>
-          ) : null}
-          {!whatsappLink ? (
-            <p className="text-sm text-sugar/70">
-              Numero de WhatsApp ainda nao configurado neste ambiente.
-            </p>
-          ) : null}
+              {whatsappLink ? (
+                <a
+                  href={whatsappLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="button-primary mt-6 px-6"
+                >
+                  Pedir no WhatsApp
+                </a>
+              ) : null}
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-3">
+              <div>
+                <p className="section-kicker text-biscuit/82">Loja</p>
+                <p className="mt-3 text-sm leading-7 text-sugar/74">
+                  {LOJA_INFO.nome}
+                </p>
+                <p className="text-sm leading-7 text-sugar/74">
+                  {endereco ?? "Endereco ainda nao configurado."}
+                </p>
+              </div>
+              <div>
+                <p className="section-kicker text-biscuit/82">Contato</p>
+                <p className="mt-3 text-sm leading-7 text-sugar/74">
+                  {telefone ?? "Telefone ainda nao configurado."}
+                </p>
+                <p className="text-sm leading-7 text-sugar/74">
+                  {LOJA_INFO.retirada}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-sugar/74">
+                  {LOJA_INFO.observacaoKit}
+                </p>
+              </div>
+              <div>
+                <p className="section-kicker text-biscuit/82">Navegacao</p>
+                <div className="mt-3 flex flex-col items-start gap-2 text-sm font-semibold text-sugar/76">
+                  <Link href="/">Inicio</Link>
+                  <Link href="/cardapio">Cardapio</Link>
+                  <Link href="/politica-de-privacidade">Privacidade</Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 border-t border-white/10 pt-4 text-xs uppercase tracking-[0.14em] text-sugar/48">
+            {new Date().getFullYear()} {LOJA_INFO.nome}
+          </div>
         </div>
       </div>
     </footer>

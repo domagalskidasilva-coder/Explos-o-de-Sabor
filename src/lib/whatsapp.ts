@@ -1,8 +1,11 @@
 import { LOJA_INFO } from "@/src/data/loja";
-import type { CartProductLine } from "@/src/lib/cart";
 import { formatCurrencyFromCents } from "@/src/lib/format";
 import { getConfiguredStoreValue } from "@/src/lib/store-info";
-import type { CheckoutFormData, PaymentMethod } from "@/src/types/cart";
+import type {
+  CartProductLine,
+  CheckoutFormData,
+  PaymentMethod,
+} from "@/src/types/cart";
 
 export function getPaymentLabel(paymentMethod: PaymentMethod) {
   switch (paymentMethod) {
@@ -27,10 +30,14 @@ export function buildWhatsAppMessage({
   formData,
   items,
   totalCents,
+  discountCents = 0,
+  couponCode = null,
 }: {
   formData: CheckoutFormData;
   items: CartProductLine[];
   totalCents: number;
+  discountCents?: number;
+  couponCode?: string | null;
 }) {
   const enderecoLoja = getConfiguredStoreValue(LOJA_INFO.endereco);
   const horarioLoja = getConfiguredStoreValue(LOJA_INFO.horario);
@@ -51,6 +58,12 @@ export function buildWhatsAppMessage({
     "Itens do pedido:",
     itensTexto || "Carrinho vazio",
     "",
+    ...(couponCode && discountCents > 0
+      ? [
+          `Cupom aplicado: ${couponCode} (-${formatCurrencyFromCents(discountCents)})`,
+          "",
+        ]
+      : []),
     `Total: ${formatCurrencyFromCents(totalCents)}`,
     "",
     `Retirada: ${LOJA_INFO.retirada}`,

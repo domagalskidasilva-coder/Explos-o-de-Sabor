@@ -1,4 +1,4 @@
-export type ProductCategory = "doce" | "salgado";
+export type ProductCategory = "doce" | "salgado" | "bebida";
 
 export interface Product {
   id: string;
@@ -6,7 +6,7 @@ export interface Product {
   categoria: ProductCategory;
   subcategoria: string;
   descricaoCurta: string;
-  precoCents: number;
+  preco: number;
   imagem: string;
   disponivel: boolean;
   destaque?: boolean;

@@ -1,0 +1,69 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="80" x2="1080" y2="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7E9D0"/>
+      <stop offset="1" stop-color="#EBCB9B"/>
+    </linearGradient>
+    <linearGradient id="body" x1="420" y1="310" x2="780" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8A4D2B"/>
+      <stop offset="1" stop-color="#60321C"/>
+    </linearGradient>
+    <linearGradient id="apron" x1="515" y1="500" x2="690" y2="730" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF8EF"/>
+      <stop offset="1" stop-color="#F2E3CC"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(600 520) rotate(90) scale(320 360)">
+      <stop stop-color="#FFD9A8" stop-opacity="0.46"/>
+      <stop offset="1" stop-color="#FFD9A8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <circle cx="600" cy="520" r="320" fill="url(#glow)"/>
+
+  <ellipse cx="600" cy="785" rx="210" ry="42" fill="#6F3B21" fill-opacity="0.16"/>
+
+  <g>
+    <circle cx="600" cy="468" r="188" fill="url(#body)"/>
+    <ellipse cx="600" cy="652" rx="150" ry="112" fill="#7A4325"/>
+    <ellipse cx="600" cy="668" rx="92" ry="84" fill="url(#apron)"/>
+    <path d="M548 628C566 648 634 648 652 628" stroke="#8A4D2B" stroke-width="10" stroke-linecap="round"/>
+  </g>
+
+  <g>
+    <ellipse cx="540" cy="455" rx="16" ry="22" fill="#2D180F"/>
+    <ellipse cx="660" cy="455" rx="16" ry="22" fill="#2D180F"/>
+    <path d="M546 528C567 549 633 549 654 528" stroke="#2D180F" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="520" cy="497" r="12" fill="#E48D7A" fill-opacity="0.55"/>
+    <circle cx="680" cy="497" r="12" fill="#E48D7A" fill-opacity="0.55"/>
+  </g>
+
+  <g>
+    <path d="M500 284C500 233 543 192 598 192C652 192 696 233 696 284V312H500V284Z" fill="#FFF8EF"/>
+    <path d="M528 222C528 197 548 176 573 176H624C649 176 668 197 668 222V246H528V222Z" fill="#FFF8EF"/>
+    <path d="M500 312H696" stroke="#D9C4A7" stroke-width="8"/>
+  </g>
+
+  <g>
+    <path d="M434 562C386 528 358 476 352 431" stroke="#6F3B21" stroke-width="34" stroke-linecap="round"/>
+    <path d="M766 560C812 526 842 474 848 431" stroke="#6F3B21" stroke-width="34" stroke-linecap="round"/>
+  </g>
+
+  <g>
+    <path d="M842 308C842 270 872 240 910 240C948 240 978 270 978 308C978 365 910 417 910 417C910 417 842 365 842 308Z" fill="#7A4325"/>
+    <path d="M910 265L924 296L958 300L933 323L940 357L910 340L880 357L887 323L862 300L896 296L910 265Z" fill="#F7E9D0"/>
+  </g>
+
+  <g>
+    <path d="M324 292C324 256 353 227 389 227C425 227 454 256 454 292V320H324V292Z" fill="#7A4325"/>
+    <path d="M340 320H438V354C438 382 416 404 389 404C362 404 340 382 340 354V320Z" fill="#8A4D2B"/>
+    <path d="M358 272C365 252 384 246 399 258" stroke="#F7E9D0" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="376" cy="332" r="8" fill="#F7E9D0"/>
+    <circle cx="404" cy="332" r="8" fill="#F7E9D0"/>
+    <path d="M374 356C382 365 396 365 404 356" stroke="#F7E9D0" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <text x="600" y="852" text-anchor="middle" fill="#6F3B21" font-family="Georgia, serif" font-size="44" font-weight="700">
+    Mascote da Confeitaria Duas Vontades
+  </text>
+</svg>

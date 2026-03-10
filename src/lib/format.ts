@@ -3,6 +3,10 @@ const brlFormatter = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
+export function formatCurrency(value: number) {
+  return brlFormatter.format(value);
+}
+
 export function formatCurrencyFromCents(cents: number) {
-  return brlFormatter.format(cents / 100);
+  return formatCurrency(cents / 100);
 }

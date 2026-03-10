@@ -1,19 +1,19 @@
 import { LOJA_INFO } from "@/src/data/loja";
 import type { CartProductLine } from "@/src/lib/cart";
-import { formatCurrencyFromCents } from "@/src/lib/format";
+import { formatCurrencyFromCents, formatDateTime } from "@/src/lib/format";
 import { getConfiguredStoreValue } from "@/src/lib/store-info";
 import type { CheckoutFormData, PaymentMethod } from "@/src/types/cart";
 
 export function getPaymentLabel(paymentMethod: PaymentMethod) {
   switch (paymentMethod) {
     case "credito":
-      return "Credito - pagar na retirada";
+      return "Credito";
     case "debito":
-      return "Debito - pagar na retirada";
+      return "Debito";
     case "dinheiro":
-      return "Dinheiro - pagar na retirada";
+      return "Dinheiro";
     case "pix":
-      return "Pix - unico pagamento antecipado";
+      return "PIX";
     default:
       throw new Error(`Forma de pagamento invalida: ${paymentMethod}`);
   }
@@ -32,32 +32,38 @@ export function buildWhatsAppMessage({
   items: CartProductLine[];
   totalCents: number;
 }) {
-  const enderecoLoja = getConfiguredStoreValue(LOJA_INFO.endereco);
-  const horarioLoja = getConfiguredStoreValue(LOJA_INFO.horario);
+  const dataPedido = formatDateTime(new Date());
   const itensTexto = items
     .map(
       (item) =>
         `${item.quantity}x ${item.product.nome} - ${formatCurrencyFromCents(item.subtotalCents)}`,
     )
     .join("\n");
+  const separador = "------------------------------";
+  const complemento = formData.complemento.trim() || "-";
+  const enderecoLoja = getConfiguredStoreValue(LOJA_INFO.endereco);
+  const horarioLoja = getConfiguredStoreValue(LOJA_INFO.horario);
 
   return [
-    `Ola! Gostaria de confirmar um pedido na ${LOJA_INFO.nome}.`,
+    `Novo pedido recebido pelo site da ${LOJA_INFO.nome}!`,
     "",
-    `Nome: ${formData.nome.trim()}`,
+    `Data: ${dataPedido}`,
+    "Tipo: Pedido via site",
+    separador,
+    `NOME: ${formData.nome.trim()}`,
+    `Fone: ${formData.telefone.trim()}`,
     `Endereco: ${formData.endereco.trim()}`,
-    `Forma de pagamento: ${getPaymentLabel(formData.pagamento)}`,
-    "",
-    "Itens do pedido:",
+    `Bairro: ${formData.bairro.trim()}`,
+    `Complemento: ${complemento}`,
+    separador,
     itensTexto || "Carrinho vazio",
-    "",
-    `Total: ${formatCurrencyFromCents(totalCents)}`,
-    "",
-    `Retirada: ${LOJA_INFO.retirada}`,
-    ...(enderecoLoja ? [`Endereco da loja: ${enderecoLoja}`] : []),
-    ...(horarioLoja ? [`Horario: ${horarioLoja}`] : []),
-    "",
-    "Pode confirmar, por favor?",
+    separador,
+    `Itens: ${formatCurrencyFromCents(totalCents)}`,
+    `TOTAL: ${formatCurrencyFromCents(totalCents)}`,
+    separador,
+    `Pagamento: ${getPaymentLabel(formData.pagamento)}`,
+    ...(enderecoLoja ? [`Referencia da loja: ${enderecoLoja}`] : []),
+    ...(horarioLoja ? [`Horario de atendimento: ${horarioLoja}`] : []),
   ].join("\n");
 }
 

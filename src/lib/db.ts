@@ -12,7 +12,7 @@ const globalForDb = globalThis as unknown as {
 };
 
 function createMissingDatabasePool() {
-  const message = "DATABASE_URL nao configurada. Defina em .env.local";
+  const message = "DATABASE_URL não configurada. Defina em .env.local";
 
   return {
     query: async () => {
@@ -71,7 +71,7 @@ async function seedInitialData() {
 
   await pool.query(
     `INSERT INTO store_settings (id, service_days, opening_time, closing_time, weekly_schedule_json, is_closed, closure_reason, closure_start_date, closure_end_date)
-     VALUES (1, 'Segunda, Terca, Quarta, Quinta, Sexta, Sabado', '08:00', '19:00', $1::jsonb, false, NULL, NULL, NULL)
+     VALUES (1, 'Segunda, Terça, Quarta, Quinta, Sexta, Sábado', '08:00', '19:00', $1::jsonb, false, NULL, NULL, NULL)
      ON CONFLICT (id) DO NOTHING`,
     [JSON.stringify(defaultWeeklySchedule)],
   );
@@ -105,15 +105,17 @@ async function ensureDatabaseMigrations() {
     ADD COLUMN IF NOT EXISTS weekly_schedule_json JSONB NOT NULL DEFAULT '[]'::jsonb;
 
     UPDATE store_settings
-    SET service_days = 'Terca a quinta'
-    WHERE service_days IS NULL OR BTRIM(service_days) = '';
+    SET service_days = 'Terça a quinta'
+    WHERE service_days IS NULL
+      OR BTRIM(service_days) = ''
+      OR service_days = 'Terca a quinta';
 
     UPDATE store_settings
     SET weekly_schedule_json = '[]'::jsonb
     WHERE weekly_schedule_json IS NULL;
 
     ALTER TABLE store_settings
-    ALTER COLUMN service_days SET DEFAULT 'Terca a quinta';
+    ALTER COLUMN service_days SET DEFAULT 'Terça a quinta';
 
     ALTER TABLE store_settings
     ALTER COLUMN service_days SET NOT NULL;
@@ -164,7 +166,7 @@ export async function initializeDatabase() {
 
         CREATE TABLE IF NOT EXISTS store_settings (
           id INTEGER PRIMARY KEY,
-          service_days TEXT NOT NULL DEFAULT 'Terca a quinta',
+          service_days TEXT NOT NULL DEFAULT 'Terça a quinta',
           opening_time TEXT NOT NULL,
           closing_time TEXT NOT NULL,
           weekly_schedule_json JSONB NOT NULL DEFAULT '[]'::jsonb,

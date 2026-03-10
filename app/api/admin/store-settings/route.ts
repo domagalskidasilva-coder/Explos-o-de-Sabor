@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requireAdminRequest } from "@/src/lib/admin-auth";
 import { getStoreSettings, updateStoreSettings } from "@/src/lib/repositories";
-import { formatWeeklyScheduleSummary, type WeeklyScheduleDay } from "@/src/lib/store-schedule";
+import {
+  formatWeeklyScheduleSummary,
+  type WeeklyScheduleDay,
+} from "@/src/lib/store-schedule";
 
 export async function GET(request: Request) {
   try {
@@ -16,7 +19,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("GET /api/admin/store-settings error", error);
     return NextResponse.json(
-      { error: "Falha ao carregar configuracoes da loja." },
+      { error: "Falha ao carregar configurações da loja." },
       { status: 500 },
     );
   }
@@ -40,7 +43,10 @@ export async function PUT(request: Request) {
       closureEndDate?: string | null;
     };
 
-    if (!Array.isArray(payload.weeklySchedule) || payload.weeklySchedule.length !== 7) {
+    if (
+      !Array.isArray(payload.weeklySchedule) ||
+      payload.weeklySchedule.length !== 7
+    ) {
       throw new Error("Informe a grade semanal completa da loja.");
     }
 
@@ -77,7 +83,7 @@ export async function PUT(request: Request) {
       payload.closureEndDate < payload.closureStartDate
     ) {
       throw new Error(
-        "A data final do fechamento nao pode ser anterior a data inicial.",
+        "A data final do fechamento não pode ser anterior à data inicial.",
       );
     }
 
@@ -104,7 +110,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ settings });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Falha ao salvar configuracoes.";
+      error instanceof Error ? error.message : "Falha ao salvar configurações.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

@@ -54,7 +54,7 @@ export default function Header() {
 
           setAtendimento(
             todayLine?.open
-              ? `${todayLine.label}: ${todayLine.openingTime} as ${todayLine.closingTime}`
+              ? `${todayLine.label}: ${todayLine.openingTime} às ${todayLine.closingTime}`
               : `${todayLine?.label ?? "Hoje"}: fechado`,
           );
           setIsClosed(payload.settings.effectiveIsClosed);

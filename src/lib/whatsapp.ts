@@ -10,15 +10,15 @@ import type {
 export function getPaymentLabel(paymentMethod: PaymentMethod) {
   switch (paymentMethod) {
     case "credito":
-      return "Credito - pagar na retirada";
+      return "Crédito - pagar na retirada";
     case "debito":
-      return "Debito - pagar na retirada";
+      return "Débito - pagar na retirada";
     case "dinheiro":
       return "Dinheiro - pagar na retirada";
     case "pix":
-      return "Pix - unico pagamento antecipado";
+      return "Pix - único pagamento antecipado";
     default:
-      throw new Error(`Forma de pagamento invalida: ${paymentMethod}`);
+      throw new Error(`Forma de pagamento inválida: ${paymentMethod}`);
   }
 }
 
@@ -49,10 +49,10 @@ export function buildWhatsAppMessage({
     .join("\n");
 
   return [
-    `Ola! Gostaria de confirmar um pedido na ${LOJA_INFO.nome}.`,
+    `Olá! Gostaria de confirmar um pedido na ${LOJA_INFO.nome}.`,
     "",
     `Nome: ${formData.nome.trim()}`,
-    `Endereco: ${formData.endereco.trim()}`,
+    `Endereço: ${formData.endereco.trim()}`,
     `Forma de pagamento: ${getPaymentLabel(formData.pagamento)}`,
     "",
     "Itens do pedido:",
@@ -67,8 +67,8 @@ export function buildWhatsAppMessage({
     `Total: ${formatCurrencyFromCents(totalCents)}`,
     "",
     `Retirada: ${LOJA_INFO.retirada}`,
-    ...(enderecoLoja ? [`Endereco da loja: ${enderecoLoja}`] : []),
-    ...(horarioLoja ? [`Horario: ${horarioLoja}`] : []),
+    ...(enderecoLoja ? [`Endereço da loja: ${enderecoLoja}`] : []),
+    ...(horarioLoja ? [`Horário: ${horarioLoja}`] : []),
     "",
     "Pode confirmar, por favor?",
   ].join("\n");

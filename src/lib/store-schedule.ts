@@ -20,11 +20,11 @@ export const WEEKDAY_DEFINITIONS: Array<{
   label: string;
 }> = [
   { key: "monday", label: "Segunda-feira" },
-  { key: "tuesday", label: "Terca-feira" },
+  { key: "tuesday", label: "Terça-feira" },
   { key: "wednesday", label: "Quarta-feira" },
   { key: "thursday", label: "Quinta-feira" },
   { key: "friday", label: "Sexta-feira" },
-  { key: "saturday", label: "Sabado" },
+  { key: "saturday", label: "Sábado" },
   { key: "sunday", label: "Domingo" },
 ];
 
@@ -62,10 +62,7 @@ export function normalizeWeeklySchedule(
   return WEEKDAY_DEFINITIONS.map(({ key, label }, index) => {
     const current = value.find((item) => {
       return (
-        item &&
-        typeof item === "object" &&
-        "key" in item &&
-        item.key === key
+        item && typeof item === "object" && "key" in item && item.key === key
       );
     }) as Partial<WeeklyScheduleDay> | undefined;
 
@@ -99,7 +96,7 @@ export function formatWeeklyScheduleSummary(schedule: WeeklyScheduleDay[]) {
 export function formatWeeklyScheduleLines(schedule: WeeklyScheduleDay[]) {
   return schedule.map((day) =>
     day.open
-      ? `${day.label}: ${day.openingTime} as ${day.closingTime}`
+      ? `${day.label}: ${day.openingTime} às ${day.closingTime}`
       : `${day.label}: fechado`,
   );
 }

@@ -104,10 +104,7 @@ export function verifyAdminSessionToken(token: string | undefined | null) {
   }
 }
 
-export function validateAdminCredentials(
-  username: string,
-  password: string,
-) {
+export function validateAdminCredentials(username: string, password: string) {
   const config = getAdminConfig();
   return username === config.username && password === config.password;
 }
@@ -124,9 +121,7 @@ export function getAdminSessionCookieOptions() {
 
 export async function isAdminAuthenticated() {
   const cookieStore = await cookies();
-  return verifyAdminSessionToken(
-    cookieStore.get(ADMIN_SESSION_COOKIE)?.value,
-  );
+  return verifyAdminSessionToken(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
 }
 
 export async function requireAdminRequest(request: Request) {
@@ -137,5 +132,5 @@ export async function requireAdminRequest(request: Request) {
     return null;
   }
 
-  return NextResponse.json({ error: "Nao autorizado." }, { status: 401 });
+  return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
 }

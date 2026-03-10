@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       !validateAdminCredentials(payload.username, payload.password)
     ) {
       return NextResponse.json(
-        { error: "Usuario ou senha invalidos." },
+        { error: "Usuário ou senha inválidos." },
         { status: 401 },
       );
     }

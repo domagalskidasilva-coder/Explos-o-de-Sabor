@@ -9,7 +9,7 @@ function parseCouponInput(payload: {
   active?: boolean;
 }) {
   if (!payload.code?.trim()) {
-    throw new Error("Codigo do cupom e obrigatorio.");
+    throw new Error("Código do cupom é obrigatório.");
   }
 
   const discountType =
@@ -19,12 +19,12 @@ function parseCouponInput(payload: {
         ? "percent"
         : null;
   if (!discountType) {
-    throw new Error("Tipo de desconto invalido.");
+    throw new Error("Tipo de desconto inválido.");
   }
 
   const discountValue = Number(payload.discountValue);
   if (!Number.isFinite(discountValue) || discountValue <= 0) {
-    throw new Error("Valor do desconto invalido.");
+    throw new Error("Valor do desconto inválido.");
   }
 
   return {

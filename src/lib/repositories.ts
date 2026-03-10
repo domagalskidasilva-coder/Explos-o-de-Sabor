@@ -210,7 +210,7 @@ function getFallbackStoreSettings(): StoreSettings {
 
 function assertDatabaseConfigured() {
   if (!isDatabaseConfigured) {
-    throw new Error("DATABASE_URL nao configurada. Defina em .env.local");
+    throw new Error("DATABASE_URL não configurada. Defina em .env.local");
   }
 }
 
@@ -377,7 +377,7 @@ export async function updateProduct(id: string, input: Omit<Product, "id">) {
   );
 
   if (!result.rows[0]) {
-    throw new Error("Produto nao encontrado.");
+    throw new Error("Produto não encontrado.");
   }
 
   return mapProduct(result.rows[0]);
@@ -491,7 +491,7 @@ export async function updateCoupon(
   );
 
   if (!result.rows[0]) {
-    throw new Error("Cupom nao encontrado.");
+    throw new Error("Cupom não encontrado.");
   }
 
   const row = result.rows[0];
@@ -559,7 +559,8 @@ export async function getStoreSettings() {
     closureReason: row.closure_reason,
     closureStartDate: row.closure_start_date,
     closureEndDate: row.closure_end_date,
-    effectiveIsClosed: row.is_closed || scheduledClosureActive || scheduleClosed,
+    effectiveIsClosed:
+      row.is_closed || scheduledClosureActive || scheduleClosed,
     scheduledClosureActive,
   } satisfies StoreSettings;
 }

@@ -33,14 +33,14 @@ export async function POST(request: Request) {
     const extension = ALLOWED_TYPES.get(image.type);
     if (!extension) {
       return NextResponse.json(
-        { error: "Formato invalido. Use JPG, PNG ou WEBP." },
+        { error: "Formato inválido. Use JPG, PNG ou WEBP." },
         { status: 400 },
       );
     }
 
     if (image.size <= 0 || image.size > MAX_FILE_SIZE_BYTES) {
       return NextResponse.json(
-        { error: "A imagem deve ter no maximo 5 MB." },
+        { error: "A imagem deve ter no máximo 5 MB." },
         { status: 400 },
       );
     }

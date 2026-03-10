@@ -22,18 +22,18 @@ export async function POST(request: Request) {
     };
 
     if (!payload.customerName?.trim()) {
-      throw new Error("Nome e obrigatorio.");
+      throw new Error("Nome é obrigatório.");
     }
 
     if (!payload.customerAddress?.trim()) {
-      throw new Error("Endereco e obrigatorio.");
+      throw new Error("Endereço é obrigatório.");
     }
 
     if (
       !payload.paymentMethod ||
       !isValidPaymentMethod(payload.paymentMethod)
     ) {
-      throw new Error("Forma de pagamento invalida.");
+      throw new Error("Forma de pagamento inválida.");
     }
 
     const lines = Array.isArray(payload.lines)

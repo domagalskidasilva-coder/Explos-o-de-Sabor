@@ -6,41 +6,41 @@ import type { Product, ProductVariation } from "@/src/types/product";
 
 function parseProductInput(payload: Partial<Product>) {
   if (!payload.nome?.trim()) {
-    throw new Error("Nome do produto e obrigatorio.");
+    throw new Error("Nome do produto é obrigatório.");
   }
   if (!payload.subcategoria?.trim()) {
-    throw new Error("Subcategoria e obrigatoria.");
+    throw new Error("Subcategoria é obrigatória.");
   }
   if (!payload.descricaoCurta?.trim()) {
-    throw new Error("Descricao e obrigatoria.");
+    throw new Error("Descrição é obrigatória.");
   }
   if (!payload.imagem?.trim()) {
-    throw new Error("Imagem e obrigatoria.");
+    throw new Error("Imagem é obrigatória.");
   }
   if (
     payload.categoria !== "doce" &&
     payload.categoria !== "salgado" &&
     payload.categoria !== "bebida"
   ) {
-    throw new Error("Categoria invalida.");
+    throw new Error("Categoria inválida.");
   }
 
   const preco = Number(payload.preco);
   if (!Number.isFinite(preco) || preco < 0) {
-    throw new Error("Preco invalido.");
+    throw new Error("Preço inválido.");
   }
 
   const variacoes = Array.isArray(payload.variacoes)
     ? payload.variacoes.flatMap((variation, index) => {
         if (!variation?.nome?.trim()) {
           throw new Error(
-            `Nome da variacao ${index + 1} e obrigatorio quando informada.`,
+            `Nome da variação ${index + 1} é obrigatório quando informada.`,
           );
         }
 
         const variationPrice = Number(variation.preco);
         if (!Number.isFinite(variationPrice) || variationPrice < 0) {
-          throw new Error(`Preco da variacao ${index + 1} e invalido.`);
+          throw new Error(`Preço da variação ${index + 1} é inválido.`);
         }
 
         return [

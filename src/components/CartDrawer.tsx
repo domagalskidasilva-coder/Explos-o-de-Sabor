@@ -13,6 +13,9 @@ export default function CartDrawer() {
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
 
   const { items, totalCents } = useCartProducts(lines);
+  const totalItems = items.reduce((accumulator, item) => {
+    return accumulator + item.quantity;
+  }, 0);
 
   useEffect(() => {
     if (!cartOpen) {
@@ -46,7 +49,7 @@ export default function CartDrawer() {
       {cartOpen ? (
         <>
           <motion.div
-            className="fixed inset-0 z-50 bg-[rgba(34,6,17,0.54)] backdrop-blur-[3px]"
+            className="fixed inset-0 z-50 bg-[rgba(34,6,17,0.54)] backdrop-blur-[4px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -57,22 +60,32 @@ export default function CartDrawer() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="cart-drawer-title"
-            className="fixed right-0 top-0 z-[60] flex h-full w-full max-w-xl flex-col border-l border-[rgba(124,20,46,0.12)] bg-[linear-gradient(180deg,rgba(255,251,247,0.98),rgba(246,235,224,0.98))] shadow-[0_30px_80px_rgba(34,6,17,0.3)]"
+            className="fixed right-0 top-0 z-[60] flex h-full w-full max-w-xl flex-col border-l border-caramel/16 bg-[linear-gradient(180deg,rgba(255,252,249,0.99),rgba(248,239,229,0.99))] shadow-[0_30px_80px_rgba(34,6,17,0.3)]"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 260, damping: 30 }}
           >
-            <div className="border-b border-[rgba(124,20,46,0.12)] bg-[linear-gradient(135deg,rgba(70,9,27,0.98),rgba(107,14,38,0.97),rgba(167,123,43,0.92))] px-5 py-5 text-sugar sm:px-6">
-              <div className="flex items-start justify-between gap-4">
-                <div>
+            <div className="relative overflow-hidden border-b border-caramel/14 bg-[linear-gradient(135deg,rgba(70,9,27,0.98),rgba(107,14,38,0.97),rgba(167,123,43,0.92))] px-5 py-5 text-sugar sm:px-6">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16),transparent_68%)]" />
+              <div className="relative flex items-start justify-between gap-4">
+                <div className="min-w-0">
                   <p className="section-kicker text-biscuit/84">Carrinho</p>
-                  <h2
-                    id="cart-drawer-title"
-                    className="mt-2 text-3xl text-sugar"
-                  >
-                    Revise seus itens antes de enviar.
+                  <h2 id="cart-drawer-title" className="mt-2 text-3xl text-sugar">
+                    Revise os itens antes de confirmar.
                   </h2>
+                  <p className="mt-2 text-sm leading-7 text-sugar/76">
+                    Tudo o que estiver aqui entra direto no checkout e depois no
+                    WhatsApp.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center rounded-full border border-white/14 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-biscuit">
+                      {totalItems} {totalItems === 1 ? "item" : "itens"}
+                    </span>
+                    <span className="inline-flex items-center rounded-full border border-white/14 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-biscuit">
+                      Total {formatCurrencyFromCents(totalCents)}
+                    </span>
+                  </div>
                 </div>
                 <button
                   ref={closeButtonRef}
@@ -81,114 +94,164 @@ export default function CartDrawer() {
                   className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-white/14 bg-white/10 text-sm font-bold text-sugar transition hover:bg-white/16"
                   aria-label="Fechar carrinho"
                 >
-                  Fechar
+                  <span aria-hidden="true" className="text-xl leading-none">
+                    ×
+                  </span>
                 </button>
               </div>
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
               {items.length === 0 ? (
-                <div className="rounded-[1.9rem] border border-dashed border-[rgba(124,20,46,0.2)] bg-white/72 p-6 text-center">
-                  <h3 className="text-2xl text-espresso">
-                    Seu carrinho está vazio.
+                <div className="dark-card flex min-h-full flex-col items-center justify-center px-6 py-10 text-center text-sugar">
+                  <span className="inline-flex h-16 w-16 items-center justify-center rounded-full border border-white/12 bg-white/10 text-sm font-bold uppercase tracking-[0.12em]">
+                    Pedido
+                  </span>
+                  <h3 className="mt-5 text-2xl text-sugar">
+                    Seu carrinho ainda está vazio.
                   </h3>
-                  <p className="mt-3 text-sm leading-7 text-espresso/75">
-                    Escolha algum item no cardápio para abrir o checkout.
+                  <p className="mt-3 max-w-xs text-sm leading-7 text-sugar/72">
+                    Adicione produtos do cardápio para montar o pedido e seguir
+                    para o checkout.
                   </p>
                 </div>
               ) : (
-                <ul className="space-y-4">
+                <div className="space-y-4">
+                  <section className="soft-card p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="section-kicker text-cocoa/78">
+                          Resumo rápido
+                        </p>
+                        <p className="mt-2 text-lg text-espresso">
+                          {totalItems} {totalItems === 1 ? "unidade" : "unidades"} adicionadas
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-cocoa/68">
+                          Total atual
+                        </p>
+                        <p className="mt-1 text-2xl font-extrabold text-espresso">
+                          {formatCurrencyFromCents(totalCents)}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <ul className="space-y-4">
                   {items.map((item) => (
-                    <li
-                      key={item.lineId}
-                      className="rounded-[1.75rem] border border-[rgba(124,20,46,0.12)] bg-white/76 p-4 shadow-[0_12px_24px_rgba(63,11,28,0.06)]"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="text-xl text-espresso">
-                            {item.product.nome}
-                          </p>
-                          {item.variationName ? (
-                            <p className="mt-1 text-sm font-semibold text-cocoa/78">
-                              Opção: {item.variationName}
+                      <li
+                        key={item.lineId}
+                        className="soft-card overflow-hidden p-0"
+                      >
+                        <div className="border-b border-caramel/12 px-4 py-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-xl text-espresso">
+                                  {item.product.nome}
+                                </p>
+                                {item.variationName ? (
+                                  <span className="inline-flex items-center rounded-full border border-caramel/16 bg-sugar px-3 py-1 text-xs font-bold uppercase tracking-[0.1em] text-cocoa/82">
+                                    {item.variationName}
+                                  </span>
+                                ) : null}
+                              </div>
+                              <p className="mt-2 text-sm leading-7 text-espresso/72">
+                                {item.product.descricaoCurta}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                remove(item.productId, item.variationId)
+                              }
+                              className="inline-flex min-h-10 items-center justify-center rounded-full border border-caramel/14 bg-sugar px-4 text-sm font-bold text-espresso transition hover:bg-oat"
+                            >
+                              Remover
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="inline-flex items-center gap-2 rounded-full border border-caramel/14 bg-sugar p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setQty(
+                                  item.productId,
+                                  item.variationId,
+                                  item.quantity - 1,
+                                )
+                              }
+                              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-cream text-xl text-espresso transition hover:bg-oat"
+                              aria-label={`Diminuir quantidade de ${item.product.nome}`}
+                            >
+                              -
+                            </button>
+                            <span className="min-w-10 text-center text-base font-bold text-espresso">
+                              {item.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setQty(
+                                  item.productId,
+                                  item.variationId,
+                                  item.quantity + 1,
+                                )
+                              }
+                              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-cream text-xl text-espresso transition hover:bg-oat"
+                              aria-label={`Aumentar quantidade de ${item.product.nome}`}
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          <div className="text-right">
+                            <p className="section-kicker text-cocoa/72">
+                              Subtotal
                             </p>
-                          ) : null}
-                          <p className="mt-2 text-sm leading-7 text-espresso/75">
-                            {item.product.descricaoCurta}
-                          </p>
+                            <p className="mt-1 text-xl font-bold text-espresso">
+                              {formatCurrencyFromCents(item.subtotalCents)}
+                            </p>
+                          </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            remove(item.productId, item.variationId)
-                          }
-                          className="inline-flex min-h-11 items-center justify-center rounded-full border border-[rgba(124,20,46,0.14)] bg-sugar px-4 text-sm font-bold text-espresso transition hover:bg-oat"
-                          aria-label={`Remover ${item.product.nome}`}
-                        >
-                          Remover
-                        </button>
-                      </div>
-                      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(124,20,46,0.14)] bg-sugar p-1">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setQty(
-                                item.productId,
-                                item.variationId,
-                                item.quantity - 1,
-                              )
-                            }
-                            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-cream text-xl text-espresso transition hover:bg-oat"
-                            aria-label={`Diminuir quantidade de ${item.product.nome}`}
-                          >
-                            -
-                          </button>
-                          <span
-                            className="min-w-10 text-center text-base font-bold text-espresso"
-                            aria-live="polite"
-                          >
-                            {item.quantity}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setQty(
-                                item.productId,
-                                item.variationId,
-                                item.quantity + 1,
-                              )
-                            }
-                            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-cream text-xl text-espresso transition hover:bg-oat"
-                            aria-label={`Aumentar quantidade de ${item.product.nome}`}
-                          >
-                            +
-                          </button>
-                        </div>
-                        <div className="text-right">
-                          <p className="section-kicker text-cocoa/74">
-                            Subtotal
-                          </p>
-                          <p className="mt-1 text-xl font-bold text-espresso">
-                            {formatCurrencyFromCents(item.subtotalCents)}
-                          </p>
-                        </div>
-                      </div>
-                    </li>
+                      </li>
                   ))}
-                </ul>
+                  </ul>
+                </div>
               )}
             </div>
 
-            <div className="border-t border-[rgba(124,20,46,0.12)] px-5 py-5 sm:px-6">
-              <div className="rounded-[1.75rem] bg-[linear-gradient(135deg,rgba(70,9,27,0.98),rgba(47,8,22,0.98))] px-5 py-5 text-sugar">
-                <div className="flex items-center justify-between gap-4">
+            <div className="border-t border-caramel/14 bg-sugar/55 px-5 py-5 backdrop-blur sm:px-6">
+              <div className="dark-card px-5 py-5 text-sugar">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <p className="section-kicker text-biscuit/84">Total</p>
-                    <p className="mt-1 text-3xl">
+                    <p className="section-kicker text-biscuit/84">
+                      Pronto para finalizar
+                    </p>
+                    <p className="mt-2 text-sm leading-7 text-sugar/72">
+                      Confira os dados no checkout antes de abrir o pedido no
+                      WhatsApp.
+                    </p>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-biscuit/70">
+                      Total do pedido
+                    </p>
+                    <p className="mt-1 text-3xl font-extrabold text-sugar">
                       {formatCurrencyFromCents(totalCents)}
                     </p>
                   </div>
+                </div>
+
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm leading-7 text-sugar/72">
+                    {items.length === 0
+                      ? "Adicione itens para continuar."
+                      : "Seu pedido será enviado com os detalhes já organizados."}
+                  </p>
                   <button
                     type="button"
                     onClick={openCheckout}
@@ -198,10 +261,6 @@ export default function CartDrawer() {
                     Finalizar pedido
                   </button>
                 </div>
-                <p className="mt-3 text-sm leading-7 text-sugar/80">
-                  O checkout abre um formulário curto e depois envia o pedido
-                  para confirmação no WhatsApp.
-                </p>
               </div>
             </div>
           </motion.aside>

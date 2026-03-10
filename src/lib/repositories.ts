@@ -10,7 +10,7 @@ import {
   normalizeWeeklySchedule,
   type WeeklyScheduleDay,
 } from "@/src/lib/store-schedule";
-import type { CartLine, PaymentMethod } from "@/src/types/cart";
+import type { CartLine, OrderType, PaymentMethod } from "@/src/types/cart";
 import type { Product, ProductVariation } from "@/src/types/product";
 
 export interface Coupon {
@@ -41,6 +41,15 @@ export interface DashboardMetrics {
   avgTicketCents: number;
   availableProducts: number;
   unavailableProducts: number;
+}
+
+export type OrderStatus = "pending" | "accepted" | "rejected";
+
+export interface OrderActionOutcome {
+  orderId: number;
+  status: OrderStatus;
+  customerName: string;
+  alreadyFinalized: boolean;
 }
 
 function getBrazilDateStamp(date = new Date()) {
@@ -675,11 +684,17 @@ export async function applyCoupon(code: string, subtotalCents: number) {
 
 export async function createOrder(input: {
   customerName: string;
+  customerPhone?: string;
   customerAddress: string;
+  customerNeighborhood?: string;
+  customerComplement?: string;
+  orderType: OrderType;
+  deliveryFeeCents?: number;
   paymentMethod: PaymentMethod;
   lines: CartLine[];
   couponCode?: string;
 }) {
+  const actionToken = randomUUID();
   const sanitizedLines = input.lines
     .map((line) => ({
       productId: line.productId,
@@ -740,11 +755,23 @@ export async function createOrder(input: {
     input.couponCode ?? "",
     subtotalCents,
   );
-  const totalCents = Math.max(0, subtotalCents - couponApplied.discountCents);
+  const deliveryFeeCents = Math.max(0, input.deliveryFeeCents ?? 0);
+  const totalCents = Math.max(
+    0,
+    subtotalCents - couponApplied.discountCents + deliveryFeeCents,
+  );
 
   if (!isDatabaseConfigured) {
     return {
       orderId: Date.now(),
+      orderToken: null,
+      status: "pending" as OrderStatus,
+      createdAt: new Date().toISOString(),
+      customerPhone: input.customerPhone?.trim() || null,
+      customerNeighborhood: input.customerNeighborhood?.trim() || null,
+      customerComplement: input.customerComplement?.trim() || null,
+      orderType: input.orderType,
+      deliveryFeeCents,
       items: orderItems.map((item) => ({
         productId: item.productId,
         variationId: item.variationId,
@@ -768,16 +795,22 @@ export async function createOrder(input: {
   try {
     await client.query("BEGIN");
 
-    const orderResult = await client.query<{ id: string }>(
+    const orderResult = await client.query<{ id: string; created_at: string }>(
       `INSERT INTO orders
-        (customer_name, customer_address, payment_method, subtotal_cents, discount_cents, total_cents, coupon_code)
+        (customer_name, customer_phone, customer_address, customer_neighborhood, customer_complement, order_type, delivery_fee_cents, payment_method, status, action_token, subtotal_cents, discount_cents, total_cents, coupon_code)
        VALUES
-        ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id::text AS id`,
+        ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', $9, $10, $11, $12, $13)
+       RETURNING id::text AS id, created_at::text`,
       [
         input.customerName.trim(),
+        input.customerPhone?.trim() || null,
         input.customerAddress.trim(),
+        input.customerNeighborhood?.trim() || null,
+        input.customerComplement?.trim() || null,
+        input.orderType,
+        deliveryFeeCents,
         input.paymentMethod,
+        actionToken,
         subtotalCents,
         couponApplied.discountCents,
         totalCents,
@@ -810,6 +843,14 @@ export async function createOrder(input: {
 
     return {
       orderId,
+      orderToken: actionToken,
+      status: "pending" as OrderStatus,
+      createdAt: orderResult.rows[0].created_at,
+      customerPhone: input.customerPhone?.trim() || null,
+      customerNeighborhood: input.customerNeighborhood?.trim() || null,
+      customerComplement: input.customerComplement?.trim() || null,
+      orderType: input.orderType,
+      deliveryFeeCents,
       items: orderItems.map((item) => ({
         productId: item.productId,
         variationId: item.variationId,
@@ -831,4 +872,61 @@ export async function createOrder(input: {
   } finally {
     client.release();
   }
+}
+
+export async function applyPublicOrderAction(
+  token: string,
+  nextStatus: Extract<OrderStatus, "accepted" | "rejected">,
+) {
+  assertDatabaseConfigured();
+  await initializeDatabase();
+
+  const timestampColumn =
+    nextStatus === "accepted" ? "accepted_at" : "rejected_at";
+
+  const result = await pool.query<{
+    id: string;
+    previous_status: OrderStatus;
+    status: OrderStatus;
+    customer_name: string;
+  }>(
+    `WITH target AS (
+       SELECT id, status, customer_name
+       FROM orders
+       WHERE action_token = $1
+     ),
+     updated AS (
+       UPDATE orders
+       SET status = CASE
+             WHEN status = 'pending' THEN $2
+             ELSE status
+           END,
+           ${timestampColumn} = CASE
+             WHEN status = 'pending' THEN NOW()
+             ELSE ${timestampColumn}
+           END
+       WHERE action_token = $1
+       RETURNING id, status
+     )
+     SELECT updated.id::text AS id,
+            target.status AS previous_status,
+            updated.status,
+            target.customer_name
+     FROM updated
+     JOIN target ON target.id = updated.id`,
+    [token, nextStatus],
+  );
+
+  const row = result.rows[0];
+
+  if (!row) {
+    throw new Error("Pedido não encontrado ou link inválido.");
+  }
+
+  return {
+    orderId: Number(row.id),
+    status: row.status,
+    customerName: row.customer_name,
+    alreadyFinalized: row.previous_status !== "pending",
+  } satisfies OrderActionOutcome;
 }

@@ -128,6 +128,37 @@ async function ensureDatabaseMigrations() {
 
     ALTER TABLE order_items
     ADD COLUMN IF NOT EXISTS variation_name TEXT;
+
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS customer_phone TEXT;
+
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS customer_neighborhood TEXT;
+
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS customer_complement TEXT;
+
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS order_type TEXT NOT NULL DEFAULT 'delivery';
+
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS delivery_fee_cents INTEGER NOT NULL DEFAULT 0;
+
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pending';
+
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS action_token TEXT;
+
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS accepted_at TIMESTAMPTZ;
+
+    ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS rejected_at TIMESTAMPTZ;
+
+    CREATE UNIQUE INDEX IF NOT EXISTS orders_action_token_key
+    ON orders(action_token)
+    WHERE action_token IS NOT NULL;
   `);
 }
 
@@ -181,8 +212,17 @@ export async function initializeDatabase() {
         CREATE TABLE IF NOT EXISTS orders (
           id BIGSERIAL PRIMARY KEY,
           customer_name TEXT NOT NULL,
+          customer_phone TEXT,
           customer_address TEXT NOT NULL,
+          customer_neighborhood TEXT,
+          customer_complement TEXT,
+          order_type TEXT NOT NULL DEFAULT 'delivery',
+          delivery_fee_cents INTEGER NOT NULL DEFAULT 0,
           payment_method TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'pending',
+          action_token TEXT UNIQUE,
+          accepted_at TIMESTAMPTZ,
+          rejected_at TIMESTAMPTZ,
           subtotal_cents INTEGER NOT NULL,
           discount_cents INTEGER NOT NULL DEFAULT 0,
           total_cents INTEGER NOT NULL,

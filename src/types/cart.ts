@@ -1,5 +1,6 @@
 import type { Product } from "@/src/types/product";
 export type PaymentMethod = "credito" | "debito" | "dinheiro" | "pix";
+export type OrderType = "delivery" | "retirada";
 
 export interface CartLine {
   productId: string;
@@ -9,7 +10,11 @@ export interface CartLine {
 
 export interface CheckoutFormData {
   nome: string;
+  telefone: string;
   endereco: string;
+  bairro: string;
+  complemento: string;
+  tipoPedido: OrderType;
   pagamento: PaymentMethod;
 }
 

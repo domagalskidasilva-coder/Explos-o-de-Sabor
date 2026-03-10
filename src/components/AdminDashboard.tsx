@@ -112,8 +112,8 @@ const sections: Array<{
 
 function getSectionButtonClasses(active: boolean) {
   return active
-    ? "border-espresso bg-espresso text-sugar shadow-[0_12px_24px_rgba(70,10,31,0.24)]"
-    : "border-caramel/20 bg-white/72 text-espresso hover:border-caramel/40 hover:bg-white";
+    ? "border-espresso bg-[linear-gradient(135deg,rgba(70,10,31,0.98),rgba(110,18,45,0.94))] text-sugar shadow-[0_16px_28px_rgba(70,10,31,0.22)]"
+    : "border-caramel/16 bg-white/78 text-espresso hover:border-caramel/34 hover:bg-white";
 }
 
 function formatBrazilianDecimalValue(value: number) {
@@ -1420,7 +1420,7 @@ export default function AdminDashboard() {
   if (loading && !metrics) {
     return (
       <main className="mx-auto max-w-7xl px-4 py-10 lg:px-6">
-        <section className="panel p-6">
+        <section className="panel-soft p-6">
           <p className="text-sm text-espresso/80">
             Carregando painel administrativo...
           </p>
@@ -1431,8 +1431,43 @@ export default function AdminDashboard() {
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6 lg:py-10">
+      <section className="panel-dark mb-6 overflow-hidden px-6 py-6 text-sugar sm:px-8">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="badge-flour">Painel administrativo</p>
+            <h1 className="mt-4 text-4xl leading-tight text-sugar sm:text-5xl">
+              Gestão interna da operação.
+            </h1>
+            <p className="mt-4 text-sm leading-8 text-sugar/74">
+              Catálogo, cupons e disponibilidade da loja organizados em uma
+              interface mais clara para leitura e ação rápida.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="surface-card-dark p-4">
+              <p className="section-kicker text-biscuit/78">Produtos</p>
+              <p className="mt-2 text-3xl font-extrabold text-sugar">
+                {products.length}
+              </p>
+            </div>
+            <div className="surface-card-dark p-4">
+              <p className="section-kicker text-biscuit/78">Cupons</p>
+              <p className="mt-2 text-3xl font-extrabold text-sugar">
+                {coupons.length}
+              </p>
+            </div>
+            <div className="surface-card-dark p-4">
+              <p className="section-kicker text-biscuit/78">Loja</p>
+              <p className="mt-2 text-xl font-extrabold text-sugar">
+                {settings?.isClosed ? "Fechada" : "Aberta"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] xl:grid-cols-[20rem_minmax(0,1fr)]">
-        <aside className="panel h-fit p-4 sm:p-5 lg:sticky lg:top-8">
+        <aside className="panel-soft h-fit p-4 sm:p-5 lg:sticky lg:top-8">
           <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-cocoa/82">
             Painel admin
           </p>
@@ -1468,7 +1503,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-2xl border border-caramel/20 bg-white/70 p-4">
+            <div className="panel-inset p-4">
               <p className="text-xs font-bold uppercase tracking-[0.1em] text-cocoa/76">
                 Produtos
               </p>
@@ -1476,7 +1511,7 @@ export default function AdminDashboard() {
                 {products.length}
               </p>
             </div>
-            <div className="rounded-2xl border border-caramel/20 bg-white/70 p-4">
+            <div className="panel-inset p-4">
               <p className="text-xs font-bold uppercase tracking-[0.1em] text-cocoa/76">
                 Cupons
               </p>
@@ -1484,7 +1519,7 @@ export default function AdminDashboard() {
                 {coupons.length}
               </p>
             </div>
-            <div className="rounded-2xl border border-caramel/20 bg-white/70 p-4">
+            <div className="panel-inset p-4">
               <p className="text-xs font-bold uppercase tracking-[0.1em] text-cocoa/76">
                 Status
               </p>
@@ -1513,12 +1548,12 @@ export default function AdminDashboard() {
 
         <div className="space-y-5">
           {message ? (
-            <p className="rounded-xl bg-success/10 px-4 py-3 text-sm font-semibold text-success">
+            <p className="rounded-[1.1rem] border border-success/15 bg-success/10 px-4 py-3 text-sm font-semibold text-success">
               {message}
             </p>
           ) : null}
           {error ? (
-            <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm font-semibold text-danger">
+            <p className="rounded-[1.1rem] border border-danger/15 bg-danger/10 px-4 py-3 text-sm font-semibold text-danger">
               {error}
             </p>
           ) : null}

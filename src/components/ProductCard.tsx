@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "motion/react";
 import { useCart } from "@/src/contexts/CartContext";
 import { formatCurrency } from "@/src/lib/format";
@@ -23,23 +23,18 @@ export default function ProductCard({ product }: { product: Product }) {
   const { add, openCart } = useCart();
   const disabled = !product.disponivel;
   const variations = product.variacoes ?? [];
-  const defaultVariationId = variations[0]?.id ?? null;
-  const [selectedVariationId, setSelectedVariationId] = useState<string | null>(
-    defaultVariationId,
-  );
-  const activeVariationId = variations.some(
-    (variation) => variation.id === selectedVariationId,
-  )
-    ? selectedVariationId
-    : defaultVariationId;
-
-  const selectedVariation = variations.find(
-    (variation) => variation.id === activeVariationId,
-  );
-  const resolvedPrice = selectedVariation?.preco ?? product.preco;
+  const requiresDetailPage = product.categoria !== "bebida";
+  const lowestPrice =
+    variations.length > 0
+      ? Math.min(...variations.map((variation) => variation.preco))
+      : product.preco;
+  const availabilityLabel = disabled ? "Indisponível" : "Disponível agora";
+  const availabilityClassName = disabled
+    ? "bg-danger/10 text-danger"
+    : "bg-success/10 text-success";
 
   function handleAddToCart() {
-    add(product.id, activeVariationId, 1);
+    add(product.id, null, 1);
     openCart();
   }
 
@@ -49,9 +44,9 @@ export default function ProductCard({ product }: { product: Product }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="group panel flex h-full flex-col overflow-hidden"
+      className="group panel-soft flex h-full flex-col overflow-hidden"
     >
-      <div className="relative aspect-[4/3] shrink-0 overflow-hidden bg-[linear-gradient(140deg,rgba(255,253,249,1),rgba(236,210,152,1))]">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[linear-gradient(140deg,rgba(255,253,249,1),rgba(236,210,152,1))]">
         <Image
           src={product.imagem}
           alt={`Foto de ${product.nome}`}
@@ -59,88 +54,80 @@ export default function ProductCard({ product }: { product: Product }) {
           sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
           className="object-cover transition duration-500 group-hover:scale-[1.04]"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(47,7,22,0.02)_0%,rgba(47,7,22,0.14)_48%,rgba(47,7,22,0.76)_100%)]" />
-        <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/86 px-3 py-2 text-[0.68rem] font-extrabold uppercase tracking-[0.1em] text-cocoa backdrop-blur">
-          <span>{getCategoryLabel(product.categoria)}</span>
-          <span className="h-1.5 w-1.5 rounded-full bg-caramel" />
-          <span>{product.subcategoria}</span>
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(47,7,22,0.02)_0%,rgba(47,7,22,0.16)_52%,rgba(47,7,22,0.74)_100%)]" />
+        <div className="absolute left-4 top-4 flex max-w-[calc(100%-2rem)] flex-wrap gap-2">
+          <span className="inline-flex items-center rounded-full border border-white/38 bg-white/86 px-3 py-2 text-[0.65rem] font-extrabold uppercase tracking-[0.12em] text-cocoa backdrop-blur">
+            {getCategoryLabel(product.categoria)}
+          </span>
+          <span className="inline-flex items-center rounded-full border border-white/18 bg-[rgba(62,8,24,0.68)] px-3 py-2 text-[0.65rem] font-extrabold uppercase tracking-[0.12em] text-biscuit backdrop-blur">
+            {product.subcategoria}
+          </span>
         </div>
-        <div className="absolute bottom-4 right-4 rounded-full border border-white/16 bg-[rgba(62,8,24,0.75)] px-3 py-2 text-sm font-extrabold text-biscuit backdrop-blur">
-          {formatCurrency(resolvedPrice)}
+        <div className="absolute bottom-4 right-4 rounded-full border border-white/14 bg-[rgba(62,8,24,0.78)] px-4 py-2 text-sm font-extrabold text-biscuit backdrop-blur">
+          {variations.length > 0
+            ? `a partir de ${formatCurrency(lowestPrice)}`
+            : formatCurrency(lowestPrice)}
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
-        <div className="space-y-5">
-          <div className="space-y-2">
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="section-kicker text-cocoa/68">Seleção da casa</p>
-            <h3 className="text-[2rem] leading-tight text-espresso">
-              {product.nome}
-            </h3>
+            <span
+              className={`inline-flex rounded-full px-3 py-1 text-[0.7rem] font-extrabold uppercase tracking-[0.12em] ${availabilityClassName}`}
+            >
+              {availabilityLabel}
+            </span>
           </div>
-          <p className="text-sm leading-7 text-espresso/78">
+          <h3 className="text-[1.7rem] leading-tight text-espresso sm:text-[1.9rem]">
+            {product.nome}
+          </h3>
+          <p className="text-sm leading-7 text-espresso/76">
             {product.descricaoCurta}
           </p>
         </div>
 
-        <div className="mt-auto space-y-5 pt-5">
-          <div className="rounded-[1.5rem] border border-[rgba(124,20,46,0.12)] bg-white/66 p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="section-kicker text-cocoa/70">Fluxo do pedido</p>
-                <p className="mt-2 text-sm leading-6 text-espresso/72">
-                  Adicione ao carrinho e confirme tudo com a loja no WhatsApp.
-                </p>
-                {variations.length > 0 ? (
-                  <div className="mt-3">
-                    <label
-                      htmlFor={`product-variation-${product.id}`}
-                      className="section-kicker text-cocoa/70"
-                    >
-                      Escolha a opção
-                    </label>
-                    <select
-                      id={`product-variation-${product.id}`}
-                      value={activeVariationId ?? ""}
-                      onChange={(event) =>
-                        setSelectedVariationId(event.target.value || null)
-                      }
-                      className="mt-2 min-h-11 w-full rounded-xl border border-[rgba(124,20,46,0.12)] bg-sugar/92 px-3 py-2 text-sm font-semibold text-espresso outline-none transition focus:border-caramel"
-                    >
-                      {variations.map((variation) => (
-                        <option key={variation.id} value={variation.id}>
-                          {variation.nome} - {formatCurrency(variation.preco)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                ) : null}
-              </div>
-              <p className="hidden rounded-full border border-caramel/18 bg-oat/80 px-3 py-1 text-sm font-extrabold text-espresso sm:inline-flex">
-                {formatCurrency(resolvedPrice)}
-              </p>
-            </div>
-          </div>
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          {variations.length > 0 ? (
+            <span className="inline-flex rounded-full bg-oat/76 px-3 py-1 text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-cocoa/78">
+              {variations.length} opções
+            </span>
+          ) : null}
+          <span className="inline-flex rounded-full bg-white/76 px-3 py-1 text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-cocoa/76">
+            {product.subcategoria}
+          </span>
+        </div>
 
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="min-w-0 flex-1">
-              <p className="section-kicker text-cocoa/70">Disponibilidade</p>
-              <p className="mt-2 text-sm leading-6 text-espresso/72">
-                {disabled
-                  ? "Item pausado no momento."
-                  : "Liberado para pedido e confirmação imediata."}
+        <div className="mt-auto flex flex-col gap-4 pt-6">
+          <div className="flex flex-col gap-4">
+            <div>
+              <p className="section-kicker text-cocoa/68">Preço</p>
+              <p className="mt-1 text-3xl font-extrabold text-espresso">
+                {variations.length > 0
+                  ? `a partir de ${formatCurrency(lowestPrice)}`
+                  : formatCurrency(lowestPrice)}
               </p>
             </div>
-            <motion.button
-              type="button"
-              whileHover={disabled ? undefined : { scale: 1.02 }}
-              whileTap={disabled ? undefined : { scale: 0.98 }}
-              disabled={disabled}
-              onClick={handleAddToCart}
-              className="button-primary shrink-0 px-6 disabled:cursor-not-allowed disabled:brightness-75"
-            >
-              {disabled ? "Indisponível" : "Adicionar"}
-            </motion.button>
+            {requiresDetailPage ? (
+              <Link
+                href={`/produto/${product.id}`}
+                className="button-primary w-full justify-center px-5"
+              >
+                {disabled ? "Pausado" : "Adicionar"}
+              </Link>
+            ) : (
+              <motion.button
+                type="button"
+                whileHover={disabled ? undefined : { scale: 1.02 }}
+                whileTap={disabled ? undefined : { scale: 0.98 }}
+                disabled={disabled}
+                onClick={handleAddToCart}
+                className="button-primary w-full justify-center px-5 disabled:cursor-not-allowed disabled:brightness-75"
+              >
+                {disabled ? "Pausado" : "Adicionar"}
+              </motion.button>
+            )}
           </div>
         </div>
       </div>

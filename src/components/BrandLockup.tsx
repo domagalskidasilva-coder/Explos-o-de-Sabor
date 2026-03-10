@@ -4,31 +4,47 @@ import { LOJA_INFO } from "@/src/data/loja";
 interface BrandLockupProps {
   compact?: boolean;
   showText?: boolean;
+  inverted?: boolean;
   className?: string;
 }
 
 export default function BrandLockup({
   compact = false,
   showText = true,
+  inverted = false,
   className = "",
 }: BrandLockupProps) {
-  const logoSize = compact ? 78 : 220;
+  const logoSize = compact ? 72 : 188;
   const frameClasses = compact
-    ? "h-[5.4rem] w-[5.4rem] p-[0.38rem]"
-    : "h-[15rem] w-[15rem] p-[0.8rem]";
+    ? "h-[3.35rem] w-[3.35rem] p-[0.2rem] sm:h-[4.75rem] sm:w-[4.75rem] sm:p-[0.3rem]"
+    : "h-[12.5rem] w-[12.5rem] p-[0.7rem]";
   const imageClasses = compact
-    ? "h-[4.6rem] w-[4.6rem]"
-    : "h-[13.3rem] w-[13.3rem]";
+    ? "h-[2.9rem] w-[2.9rem] sm:h-[4.05rem] sm:w-[4.05rem]"
+    : "h-[11rem] w-[11rem]";
+  const eyebrowClass = inverted ? "text-biscuit/78" : "text-cocoa/60";
+  const headingClass = inverted ? "text-sugar" : "text-espresso";
+  const copyClass = inverted ? "text-sugar/68" : "text-espresso/66";
 
   return (
     <div
-      className={`flex items-center gap-4 ${compact ? "" : "flex-col text-center"} ${className}`.trim()}
+      className={[
+        "flex items-center gap-3.5 sm:gap-4",
+        compact ? "min-w-0" : "flex-col text-center",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       <div
-        className={`relative flex shrink-0 items-center justify-center rounded-full border border-caramel/32 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(247,228,186,0.96))] shadow-[0_18px_42px_rgba(63,11,28,0.2)] ${frameClasses}`}
+        className={[
+          "relative shrink-0 rounded-full border border-caramel/24",
+          "bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(248,232,194,0.92))]",
+          "shadow-[0_18px_40px_rgba(63,11,28,0.16)]",
+          frameClasses,
+        ].join(" ")}
       >
-        <div className="absolute inset-[6px] rounded-full border border-caramel/34" />
-        <div className="absolute inset-[14px] rounded-full border border-espresso/10" />
+        <div className="absolute inset-[4px] rounded-full border border-caramel/20" />
+        <div className="absolute inset-[11px] rounded-full border border-white/50" />
         <Image
           src="/images/logo-explosao.jpeg"
           alt={`Logo da ${LOJA_INFO.nome}`}
@@ -38,22 +54,31 @@ export default function BrandLockup({
           priority
         />
       </div>
+
       {showText ? (
         <div className={compact ? "min-w-0" : "max-w-sm"}>
           <p
-            className={`font-extrabold uppercase tracking-[0.16em] text-cocoa/80 ${
-              compact ? "text-[0.62rem]" : "text-xs"
+            className={`font-extrabold uppercase tracking-[0.22em] ${eyebrowClass} ${
+              compact ? "text-[0.45rem] sm:text-[0.6rem]" : "text-[0.72rem]"
             }`}
           >
-            Delivery
+            Cozinha artesanal
           </p>
           <h2
-            className={`mt-1 text-espresso ${compact ? "text-xl leading-tight sm:text-2xl" : "text-2xl sm:text-3xl"}`}
+            className={`mt-1 text-balance ${headingClass} ${
+              compact
+                ? "text-[0.98rem] leading-tight sm:text-[1.45rem]"
+                : "text-[2.1rem] leading-none sm:text-[2.7rem]"
+            }`}
           >
             {LOJA_INFO.nome}
           </h2>
           <p
-            className={`mt-1 text-espresso/72 ${compact ? "text-xs leading-5 sm:text-sm" : "text-sm leading-6"}`}
+            className={`mt-1.5 ${copyClass} ${
+              compact
+                ? "hidden sm:line-clamp-2 sm:block sm:text-xs sm:leading-5"
+                : "text-sm leading-6"
+            }`}
           >
             {LOJA_INFO.assinatura}
           </p>
